@@ -3,18 +3,23 @@
 # requires-python = ">=3.10"
 # dependencies = ["pyperclip>=1.9"]
 # ///
-"""Turn a GitHub issue URL in the clipboard into a Markdown link.
+"""Turn a GitHub issue URL in the clipboard into a Markdown or HTML link.
 
 Reads the clipboard, fetches the issue title from the GitHub API, and
-copies `[repo #number: title](url)` back to the clipboard. Prints the
-link on success, or a message on error. On error, the clipboard does
-not change.
+prints `[repo #number: title](url)`. In Markdown mode, the script also
+copies the link to the clipboard. With --html, the script prints
+`<a href="url">repo #number: title</a>` and does not change the
+clipboard, because espanso restores only plain text after an HTML
+expansion. On error, the script prints a message and does not change
+the clipboard.
 
 Token lookup order: GITHUB_TOKEN, GH_TOKEN, then `gh auth token`.
 """
 
 from __future__ import annotations
 
+import argparse
+import html
 import json
 import os
 import re
@@ -88,7 +93,7 @@ def fetch_issue(owner: str, repo: str, number: int, token: str | None) -> dict:
         raise LinkError("GitHub API returned invalid JSON")
 
 
-def make_link(clipboard_text: str, token: str | None) -> str:
+def make_link(clipboard_text: str, token: str | None, as_html: bool = False) -> str:
     owner, repo, number = parse_issue_url(clipboard_text)
     issue = fetch_issue(owner, repo, number, token)
     title = issue.get("title")
@@ -101,20 +106,28 @@ def make_link(clipboard_text: str, token: str | None) -> str:
     except LinkError:
         pass
     text = f"{repo} #{number}: {title}"
+    if as_html:
+        return f'<a href="{html.escape(url)}">{html.escape(text)}</a>'
     return f"[{escape_markdown_link_text(text)}]({url})"
 
 
 def main() -> int:
     import pyperclip
 
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--html", action="store_true", help="print an HTML link")
+    args = parser.parse_args()
+
     try:
-        link = make_link(pyperclip.paste(), get_token())
-        pyperclip.copy(link)
+        link = make_link(pyperclip.paste(), get_token(), as_html=args.html)
+        if not args.html:
+            pyperclip.copy(link)
         # Espanso 2.2.1 crashes on an empty expansion, so always print something.
         print(link, end="")
     except (LinkError, pyperclip.PyperclipException) as e:
         # Espanso types stdout, so the user sees the error where they typed the trigger.
-        print(f"gh-issue-link error: {e}", end="")
+        message = f"gh-issue-link error: {e}"
+        print(html.escape(message) if args.html else message, end="")
         return 1
     return 0
 

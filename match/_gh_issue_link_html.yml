@@ -1,0 +1,10 @@
+# HTML version of ":ghlink". Espanso does not load files that start with "_"
+# by default. config/gh_issue_link_zendesk.yml includes this file in Zendesk.
+matches:
+  - trigger: ":ghlink"
+    html: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: 'sh "$CONFIG/scripts/gh_issue_link.sh" --html'

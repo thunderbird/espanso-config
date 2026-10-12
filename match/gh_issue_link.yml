@@ -1,6 +1,8 @@
 # Copy a GitHub issue URL and type ":ghlink". The trigger expands to a
 # Markdown link, [repo #number: title](issue URL), and the clipboard holds it too.
 # On error, the trigger expands to the error message.
+# config/gh_issue_link_zendesk.yml excludes this file in Zendesk and uses
+# match/_gh_issue_link_html.yml there.
 matches:
   - trigger: ":ghlink"
     replace: "{{output}}"
@@ -9,5 +11,4 @@ matches:
         type: shell
         params:
           # Espanso sets $CONFIG to its configuration folder. %CONFIG% works only in "script" vars.
-          # Espanso 2.2.1 crashes on an empty expansion, so print an error if there is no output.
-          cmd: 'out=$(PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH" uv run --quiet --script "$CONFIG/scripts/gh_issue_link.py" 2>&1); printf "%s" "${out:-gh-issue-link error: no output}"'
+          cmd: 'sh "$CONFIG/scripts/gh_issue_link.sh"'

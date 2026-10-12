@@ -1,0 +1,11 @@
+# Copy a GitHub issue URL and type ":ghhtml". The trigger expands to an
+# HTML link, <a href="issue URL">repo #number: title</a>, in any app that
+# accepts rich text. The clipboard does not change.
+matches:
+  - trigger: ":ghhtml"
+    html: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: 'sh "$CONFIG/scripts/gh_issue_link.sh" --html'

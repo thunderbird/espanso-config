@@ -63,6 +63,18 @@ def test_make_link_transferred_issue(monkeypatch):
     assert link == "[new #42: Moved](https://github.com/o/new/issues/42)"
 
 
+def test_make_link_html(monkeypatch):
+    monkeypatch.setattr(
+        gh_issue_link,
+        "fetch_issue",
+        lambda *a: {"title": 'Fix <b> & "q"', "html_url": "https://github.com/o/r/issues/7"},
+    )
+    link = gh_issue_link.make_link("https://github.com/o/r/issues/7", None, as_html=True)
+    assert link == (
+        '<a href="https://github.com/o/r/issues/7">r #7: Fix &lt;b&gt; &amp; &quot;q&quot;</a>'
+    )
+
+
 def test_make_link_without_title(monkeypatch):
     monkeypatch.setattr(gh_issue_link, "fetch_issue", lambda *a: {"title": ""})
     with pytest.raises(gh_issue_link.LinkError):
