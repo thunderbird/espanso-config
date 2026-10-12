@@ -6,8 +6,8 @@
 """Turn a GitHub issue URL in the clipboard into a Markdown link.
 
 Reads the clipboard, fetches the issue title from the GitHub API, and
-copies `[title](url)` back to the clipboard. On error, prints a message
-and leaves the clipboard unchanged.
+copies `[title](url)` back to the clipboard. Prints the link on success,
+or a message on error. On error, the clipboard does not change.
 
 Token lookup order: GITHUB_TOKEN, GH_TOKEN, then `gh auth token`.
 """
@@ -103,6 +103,8 @@ def main() -> int:
     try:
         link = make_link(pyperclip.paste(), get_token())
         pyperclip.copy(link)
+        # Espanso 2.2.1 crashes on an empty expansion, so always print something.
+        print(link, end="")
     except (LinkError, pyperclip.PyperclipException) as e:
         # Espanso types stdout, so the user sees the error where they typed the trigger.
         print(f"gh-issue-link error: {e}", end="")
