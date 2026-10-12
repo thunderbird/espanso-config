@@ -54,6 +54,64 @@ The script gets the summary from the Bugzilla REST API without an API key, so it
 
 In Zendesk, `:ghl`, `:zdl`, and `:bugl` expand to HTML links instead of Markdown. Espanso finds Zendesk by the window title and the program, so the browser tab title must contain "Zendesk", and the browser must be Firefox, Chrome, Edge, or Safari. Other apps, for example VS Code, always get Markdown, also if their window title contains "Zendesk". To add another HTML app, add a configuration file like `config/zendesk.yml` with a different `filter_title`.
 
+## macOS Quick Actions: selected ticket number to a Zendesk link
+
+Two Quick Actions for the macOS Shortcuts app change a selected ticket number into a Zendesk ticket link. A Quick Action is a shortcut that runs on the selected text in any app. The Quick Actions do not use espanso, uv, or Python.
+
+- Zendesk Link, Command-Control-Z: replaces the selection with the Markdown link, for example `[Zendesk ticket #8486](https://tbpro.zendesk.com/agent/tickets/8486)`.
+- Zendesk HTML Link, Shift-Command-Control-Z: copies a rich text link and does not change the selection. Press Command-V to replace the selection with the link. Apps that do not accept rich text, for example VS Code, paste the Markdown link.
+- If the selection has no number, both Quick Actions show a notification and do not change the selection. If the selection has more than one number, they use the first number.
+
+Gmail in Firefox does not accept a rich text link from a Quick Action. For this reason, the HTML Quick Action copies the link, and you paste it.
+
+### Install by import
+
+1. Download `macos/shortcuts/Zendesk Link.shortcut` and `macos/shortcuts/Zendesk HTML Link.shortcut`.
+2. Double-click each file and select "Add Shortcut".
+3. In Shortcuts, open Settings > Advanced and turn on "Allow Running Scripts". The HTML Quick Action needs it.
+4. Add the keyboard shortcuts. Open System Settings > Keyboard > Keyboard Shortcuts > Services. In the Text group, double-click to the right of "Zendesk Link" and press Command-Control-Z. Do the same for "Zendesk HTML Link" with Shift-Command-Control-Z.
+
+If a shortcut with the same name exists, Shortcuts adds the new one with a number, for example "Zendesk HTML Link 1". Delete the old shortcut before you import a new version, and add the keyboard shortcut again.
+
+### Build by hand
+
+If you cannot import the files, make each Quick Action in the Shortcuts app:
+
+1. Select File > New Shortcut, and give it the name "Zendesk Link" or "Zendesk HTML Link".
+2. Open the shortcut details with the "i" button. Turn on "Use as Quick Action" and "Services Menu", and set it to receive Text.
+3. Add the action "Match Text". Set the pattern to `\d+`, and set the text to Shortcut Input.
+4. Add "Get Item from List" with "First Item" from Matches.
+5. Add "If" with Item from List and "has any value".
+6. For Zendesk Link, add these actions after "If":
+   1. Add "Text" with `[Zendesk ticket #Item from List](https://tbpro.zendesk.com/agent/tickets/Item from List)`. Insert "Item from List" as a variable two times.
+   2. Add "Stop and Output" with the Text variable.
+7. For Zendesk HTML Link, add "Run Shell Script" after "If". Set the shell to zsh, set "Pass Input" to "as arguments", set the input to Item from List, and use this script:
+
+   ```sh
+   osascript -l JavaScript -e '
+   function run(argv) {
+     ObjC.import("AppKit");
+     const number = argv[0];
+     const url = "https://tbpro.zendesk.com/agent/tickets/" + number;
+     const text = "Zendesk ticket #" + number;
+     const pasteboard = $.NSPasteboard.generalPasteboard;
+     pasteboard.clearContents;
+     pasteboard.setStringForType($(`<a href="${url}">${text}</a>`), $("public.html"));
+     pasteboard.setStringForType($(`[${text}](${url})`), $("public.utf8-plain-text"));
+   }' "$1"
+   ```
+
+8. After "Otherwise", add "Show Notification" with the text "Select text that contains a ticket number."
+9. Do steps 3 and 4 of "Install by import".
+
+### Change the Quick Actions
+
+`macos/shortcuts/build_shortcuts.py` makes the two `.shortcut` files and signs them with `shortcuts sign`. After you change the script, run it on a Mac:
+
+```sh
+uv run macos/shortcuts/build_shortcuts.py
+```
+
 ## Requirements
 
 - [uv](https://docs.astral.sh/uv/). The scripts declare their dependencies inline, and uv installs them on the first run.
