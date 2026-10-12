@@ -1,0 +1,14 @@
+# Copy a Zendesk ticket URL and type ":zdl". The trigger expands to a
+# Markdown link, [Zendesk ticket #number](ticket URL), and the clipboard holds it too.
+# On error, the trigger expands to the error message.
+# config/zendesk.yml excludes this file in Zendesk and uses
+# match/_zendesk_html.yml there.
+matches:
+  - trigger: ":zdl"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          # Espanso sets $CONFIG to its configuration folder. %CONFIG% works only in "script" vars.
+          cmd: 'sh "$CONFIG/scripts/run_uv_script.sh" zd_ticket_link.py'

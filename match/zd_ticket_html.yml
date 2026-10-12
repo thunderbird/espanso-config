@@ -1,0 +1,11 @@
+# Copy a Zendesk ticket URL and type ":zdhtml". The trigger expands to an
+# HTML link, <a href="ticket URL">Zendesk ticket #number</a>, in any app that
+# accepts rich text. The clipboard does not change.
+matches:
+  - trigger: ":zdhtml"
+    html: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: 'sh "$CONFIG/scripts/run_uv_script.sh" zd_ticket_link.py --html'

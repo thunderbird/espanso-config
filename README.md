@@ -16,32 +16,51 @@ For apps that use HTML instead of Markdown, type `:ghhtml`. The trigger expands 
 <a href="https://github.com/thunderbird/espanso-config/issues/1">espanso-config #1: Add macro that turns a GitHub issue URL in the clipboard into a Markdown link</a>
 ```
 
-In Zendesk, `:ghlink` also expands to the HTML link. Espanso finds Zendesk by the window title, so the browser tab title must contain "Zendesk". To add another HTML app, add a configuration file like `config/gh_issue_link_zendesk.yml` with a different `filter_title`.
-
 The script can fail for two reasons: the clipboard does not contain an issue URL, or the GitHub API call fails. On a failure, the trigger expands to an error message and the clipboard does not change.
 
-### Requirements
+## `:zdl` and `:zdhtml`: Zendesk ticket URL to a link
 
-- [uv](https://docs.astral.sh/uv/). The script declares its dependencies inline, and uv installs them on the first run.
-- Optional: the [GitHub CLI](https://cli.github.com/) (`gh`), logged in. The script uses `GITHUB_TOKEN`, `GH_TOKEN`, or `gh auth token`, in that order. A token gives access to private repositories and a higher API rate limit.
+Copy an MZLA Zendesk ticket URL, then type `:zdl`. The trigger expands to a Markdown link with the ticket number, and the clipboard also contains the link. For example:
 
-### Install
+```
+[Zendesk ticket #8486](https://tbpro.zendesk.com/agent/tickets/8486)
+```
+
+For apps that use HTML instead of Markdown, type `:zdhtml`. The trigger expands to a rich text link, and the clipboard does not change. For example:
+
+```html
+<a href="https://tbpro.zendesk.com/agent/tickets/8486">Zendesk ticket #8486</a>
+```
+
+The script does not call the Zendesk API. If the clipboard does not contain a `https://tbpro.zendesk.com/agent/tickets/<number>` URL, the trigger expands to an error message and the clipboard does not change.
+
+## HTML links in Zendesk
+
+In Zendesk, `:ghlink` and `:zdl` expand to HTML links instead of Markdown. Espanso finds Zendesk by the window title, so the browser tab title must contain "Zendesk". To add another HTML app, add a configuration file like `config/zendesk.yml` with a different `filter_title`.
+
+## Requirements
+
+- [uv](https://docs.astral.sh/uv/). The scripts declare their dependencies inline, and uv installs them on the first run.
+- Optional: the [GitHub CLI](https://cli.github.com/) (`gh`), logged in. The GitHub script uses `GITHUB_TOKEN`, `GH_TOKEN`, or `gh auth token`, in that order. A token gives access to private repositories and a higher API rate limit.
+
+## Install
 
 Run these commands from the root of this repository:
 
 ```sh
 CONFIG="$(espanso path config)"
 mkdir -p "$CONFIG/scripts"
-for f in scripts/gh_issue_link.py scripts/gh_issue_link.sh \
-  match/gh_issue_link.yml match/gh_issue_html.yml match/_gh_issue_link_html.yml \
-  config/gh_issue_link_zendesk.yml; do
+for f in scripts/run_uv_script.sh scripts/gh_issue_link.py scripts/zd_ticket_link.py \
+  match/gh_issue_link.yml match/gh_issue_html.yml \
+  match/zd_ticket_link.yml match/zd_ticket_html.yml match/_zendesk_html.yml \
+  config/zendesk.yml; do
   ln -s "$PWD/$f" "$CONFIG/$f"
 done
 ```
 
 Espanso reloads the configuration automatically.
 
-### Test
+## Test
 
 ```sh
 uv run --with pytest --with pyperclip pytest tests

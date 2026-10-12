@@ -1,8 +1,9 @@
-# In Zendesk, ":ghlink" expands to an HTML link instead of Markdown.
+# In Zendesk, ":ghlink" and ":zdl" expand to HTML links instead of Markdown.
 # Zendesk runs in a browser, so this matches the window title, which
 # contains the title of the active tab.
 filter_title: "Zendesk"
 extra_includes:
-  - "../match/_gh_issue_link_html.yml"
+  - "../match/_zendesk_html.yml"
 extra_excludes:
   - "../match/gh_issue_link.yml"
+  - "../match/zd_ticket_link.yml"
