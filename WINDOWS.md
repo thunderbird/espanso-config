@@ -79,6 +79,14 @@ In a browser tab with "Zendesk" in the title, `:ghl` and `:zdl` expand to HTML l
 
 ## Troubleshooting
 
+If no trigger expands, not even the built-in `:espanso`, and the trigger text stays on the screen, espanso does not see your keystrokes. This occurs if you type through Synergy, Barrier, Input Leap, or other software that sends the keys from a different computer. This software sends software events without a keyboard device, and by default espanso ignores these events. Add this line to `default.yml` in the `config` folder of the espanso config folder:
+
+```yaml
+win32_exclude_orphan_events: false
+```
+
+Espanso loads the change automatically.
+
 If a trigger expands to nothing or to an espanso error, make sure that `uv --version` works in a new PowerShell window. Then run `espanso restart` in that window.
 
 Make sure that the scripts are in the `scripts` folder directly below the espanso config folder, for example `C:\Users\<you>\AppData\Roaming\espanso\scripts\gh_issue_link.py`. The match files look for them there. If the scripts are in `C:\scripts` or in `espanso\config\scripts`, the install commands used an empty `$config`. Move the scripts to the correct folder.
