@@ -19,6 +19,7 @@ Project decisions for Claude Code sessions on macOS and Windows. README.md and W
 - On Windows, espanso runs `shell` vars in PowerShell.
 - After an HTML expansion, espanso restores only plain text to the clipboard. For this reason, `--html` mode does not change the clipboard.
 - Test a match without typing: `espanso match list -t --title "<window title>"`. To load other files, set `ESPANSO_CONFIG_DIR` to a temporary folder.
+- Espanso watches its own config folder, not the repo files behind the symlinks. After you change a linked file, run `espanso restart`.
 - On Windows, `espanso` is a GUI program and prints nothing in PowerShell, also with a pipe. `$config = espanso path config` was empty, so the install copied the scripts to `C:\scripts`. Use `espansod <command> | Out-String`.
 - On Windows, espanso ignores keystrokes from Synergy and similar software, because they have no HID device. The Windows laptop uses Synergy, so its `default.yml` has `win32_exclude_orphan_events: false`.
 - `%CONFIG%` is the espanso config root (`%APPDATA%\espanso` on Windows), not its `config` subfolder. The scripts go in `%CONFIG%\scripts`.
