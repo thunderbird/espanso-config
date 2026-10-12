@@ -1,4 +1,4 @@
-# Windows version of match/_zendesk_html.yml: HTML versions of ":ghl" and ":zdl".
+# Windows version of match/_zendesk_html.yml: HTML versions of ":ghl", ":zdl", and ":bugl".
 # Espanso does not load files that start with "_" by default.
 # config/zendesk.yml includes this file in Zendesk.
 # See windows/match/gh_issue_link.yml for why this file uses "script" vars.
@@ -30,5 +30,20 @@ matches:
             - --quiet
             - --script
             - "%CONFIG%/scripts/zd_ticket_link.py"
+            - --html
+          ignore_error: true
+
+  - trigger: ":bugl"
+    html: "{{output}}"
+    vars:
+      - name: output
+        type: script
+        params:
+          args:
+            - uv
+            - run
+            - --quiet
+            - --script
+            - "%CONFIG%/scripts/bugzilla_link.py"
             - --html
           ignore_error: true

@@ -1,6 +1,6 @@
 # Windows setup
 
-This page tells you how to install the `:ghl`, `:ghhtml`, `:zdl`, and `:zdhtml` macros on Windows. [README.md](README.md) describes what each macro does.
+This page tells you how to install the `:ghl`, `:ghhtml`, `:zdl`, `:zdhtml`, `:bugl`, and `:bughtml` macros on Windows. [README.md](README.md) describes what each macro does.
 
 The Windows match files are in `windows/match/`. They have the same names and triggers as the macOS files in `match/`. On Windows, espanso runs `shell` variables in PowerShell, so the Windows files use `script` variables, which run uv directly.
 
@@ -36,7 +36,7 @@ Open PowerShell in the root of this repository and run these commands:
 $config = (espansod path config | Out-String).Trim()
 if (-not $config) { throw "espansod path config printed nothing" }
 New-Item -ItemType Directory -Force "$config\scripts" | Out-Null
-Copy-Item scripts\gh_issue_link.py, scripts\zd_ticket_link.py "$config\scripts\"
+Copy-Item scripts\gh_issue_link.py, scripts\zd_ticket_link.py, scripts\bugzilla_link.py "$config\scripts\"
 Copy-Item config\zendesk.yml "$config\config\"
 Copy-Item windows\match\*.yml "$config\match\"
 ```
@@ -51,7 +51,7 @@ Open PowerShell in the root of this repository and run these commands:
 $config = (espansod path config | Out-String).Trim()
 if (-not $config) { throw "espansod path config printed nothing" }
 New-Item -ItemType Directory -Force "$config\scripts" | Out-Null
-foreach ($f in "scripts\gh_issue_link.py", "scripts\zd_ticket_link.py", "config\zendesk.yml") {
+foreach ($f in "scripts\gh_issue_link.py", "scripts\zd_ticket_link.py", "scripts\bugzilla_link.py", "config\zendesk.yml") {
   New-Item -ItemType SymbolicLink -Path "$config\$f" -Target "$PWD\$f"
 }
 foreach ($f in Get-ChildItem windows\match\*.yml) {
@@ -68,14 +68,14 @@ espanso restart
 espansod match list -t | Out-String
 ```
 
-The list must include `:ghl`, `:ghhtml`, `:zdl`, and `:zdhtml`, each one time.
+The list must include `:ghl`, `:ghhtml`, `:zdl`, `:zdhtml`, `:bugl`, and `:bughtml`, each one time.
 
 ## Use
 
-1. Copy a GitHub issue URL or a Zendesk ticket URL.
+1. Copy a GitHub issue URL, a Zendesk ticket URL, or a Bugzilla bug URL.
 2. Type the trigger.
 
-In a browser tab with "Zendesk" in the title, `:ghl` and `:zdl` expand to HTML links. `config/zendesk.yml` controls this behavior.
+In a browser tab with "Zendesk" in the title, `:ghl`, `:zdl`, and `:bugl` expand to HTML links. `config/zendesk.yml` controls this behavior.
 
 ## Troubleshooting
 

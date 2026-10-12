@@ -1,0 +1,17 @@
+# Copy a Bugzilla bug URL and type ":bugl" to get a Markdown link.
+# Windows version of match/bugzilla_link.yml.
+# See windows/match/gh_issue_link.yml for why this file uses a "script" var.
+matches:
+  - trigger: ":bugl"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: script
+        params:
+          args:
+            - uv
+            - run
+            - --quiet
+            - --script
+            - "%CONFIG%/scripts/bugzilla_link.py"
+          ignore_error: true

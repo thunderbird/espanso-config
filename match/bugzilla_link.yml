@@ -1,0 +1,15 @@
+# Copy a Bugzilla bug URL and type ":bugl". The trigger expands to a
+# Markdown link, [Bug number: summary](bug URL), and the clipboard holds it too.
+# The trigger accepts bugzilla.mozilla.org/show_bug.cgi?id=<number> and bugzil.la/<number>.
+# On error, the trigger expands to the error message.
+# config/zendesk.yml excludes this file in Zendesk and uses
+# match/_zendesk_html.yml there.
+matches:
+  - trigger: ":bugl"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          # Espanso sets $CONFIG to its configuration folder. %CONFIG% works only in "script" vars.
+          cmd: 'sh "$CONFIG/scripts/run_uv_script.sh" bugzilla_link.py'

@@ -6,8 +6,8 @@ Project decisions for Claude Code sessions on macOS and Windows. README.md and W
 
 - `scripts/*.py` are uv scripts with inline dependencies (only `pyperclip`). macOS and Windows share them.
 - `match/` and `scripts/run_uv_script.sh` are for macOS only. `windows/match/` is for Windows only, with the same file names and triggers.
-- If the window title contains "Zendesk", `config/zendesk.yml` and the `_zendesk_html.yml` files make `:ghl` and `:zdl` expand to HTML. Espanso does not load match files that start with `_` by default.
-- Triggers: `:ghl` and `:ghhtml` for GitHub issues, `:zdl` and `:zdhtml` for Zendesk tickets (`tbpro.zendesk.com` only).
+- If the window title contains "Zendesk", `config/zendesk.yml` and the `_zendesk_html.yml` files make `:ghl`, `:zdl`, and `:bugl` expand to HTML. Espanso does not load match files that start with `_` by default.
+- Triggers: `:ghl` and `:ghhtml` for GitHub issues, `:zdl` and `:zdhtml` for Zendesk tickets (`tbpro.zendesk.com` only), `:bugl` and `:bughtml` for Mozilla Bugzilla bugs (public bugs only).
 - Tests: `uv run --with pytest --with pyperclip pytest tests`.
 
 ## Espanso facts that caused bugs
