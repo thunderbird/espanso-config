@@ -1,7 +1,7 @@
-# HTML versions of ":ghlink" and ":zdl". Espanso does not load files that
+# HTML versions of ":ghl" and ":zdl". Espanso does not load files that
 # start with "_" by default. config/zendesk.yml includes this file in Zendesk.
 matches:
-  - trigger: ":ghlink"
+  - trigger: ":ghl"
     html: "{{output}}"
     vars:
       - name: output

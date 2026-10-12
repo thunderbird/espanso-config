@@ -2,9 +2,9 @@
 
 Shared [espanso](https://espanso.org/) matches.
 
-## `:ghlink` and `:ghhtml`: GitHub issue URL to a link
+## `:ghl` and `:ghhtml`: GitHub issue URL to a link
 
-Copy a GitHub issue URL, then type `:ghlink`. The trigger expands to a Markdown link with the repository name, issue number, and issue title, and the clipboard also contains the link. For example:
+Copy a GitHub issue URL, then type `:ghl`. The trigger expands to a Markdown link with the repository name, issue number, and issue title, and the clipboard also contains the link. For example:
 
 ```
 [espanso-config #1: Add macro that turns a GitHub issue URL in the clipboard into a Markdown link](https://github.com/thunderbird/espanso-config/issues/1)
@@ -36,7 +36,7 @@ The script does not call the Zendesk API. If the clipboard does not contain a `h
 
 ## HTML links in Zendesk
 
-In Zendesk, `:ghlink` and `:zdl` expand to HTML links instead of Markdown. Espanso finds Zendesk by the window title, so the browser tab title must contain "Zendesk". To add another HTML app, add a configuration file like `config/zendesk.yml` with a different `filter_title`.
+In Zendesk, `:ghl` and `:zdl` expand to HTML links instead of Markdown. Espanso finds Zendesk by the window title, so the browser tab title must contain "Zendesk". To add another HTML app, add a configuration file like `config/zendesk.yml` with a different `filter_title`.
 
 ## Requirements
 

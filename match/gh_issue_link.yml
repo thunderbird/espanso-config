@@ -1,10 +1,10 @@
-# Copy a GitHub issue URL and type ":ghlink". The trigger expands to a
+# Copy a GitHub issue URL and type ":ghl". The trigger expands to a
 # Markdown link, [repo #number: title](issue URL), and the clipboard holds it too.
 # On error, the trigger expands to the error message.
 # config/zendesk.yml excludes this file in Zendesk and uses
 # match/_zendesk_html.yml there.
 matches:
-  - trigger: ":ghlink"
+  - trigger: ":ghl"
     replace: "{{output}}"
     vars:
       - name: output
