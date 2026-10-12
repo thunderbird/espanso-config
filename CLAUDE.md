@@ -19,6 +19,8 @@ Project decisions for Claude Code sessions on macOS and Windows. README.md and W
 - On Windows, espanso runs `shell` vars in PowerShell.
 - After an HTML expansion, espanso restores only plain text to the clipboard. For this reason, `--html` mode does not change the clipboard.
 - Test a match without typing: `espanso match list -t --title "<window title>"`. To load other files, set `ESPANSO_CONFIG_DIR` to a temporary folder.
+- On Windows, `espanso` is a GUI program and prints nothing in PowerShell, also with a pipe. `$config = espanso path config` was empty, so the install copied the scripts to `C:\scripts`. Use `espansod <command> | Out-String`.
+- `%CONFIG%` is the espanso config root (`%APPDATA%\espanso` on Windows), not its `config` subfolder. The scripts go in `%CONFIG%\scripts`.
 
 ## Workflow
 
