@@ -3,7 +3,7 @@
 // Usage: osascript -l JavaScript bugzilla_link.js markdown|html <text>
 //
 // Accepts `https://bugzilla.mozilla.org/show_bug.cgi?id=N`, `bugzil.la/N`,
-// and a bare bug number N, and prints `[Bug N: summary](https://bugzilla.mozilla.org/show_bug.cgi?id=N)`.
+// a bug number N, and `bug N`, and prints `[Bug N: summary](https://bugzilla.mozilla.org/show_bug.cgi?id=N)`.
 // In html mode, the script also copies `<a href="url">Bug N: summary</a>` with
 // the Markdown link as plain text, so that Command-V pastes a rich text link.
 // On error, the script prints "Error: <message>" and does not change the
@@ -18,7 +18,7 @@ const LONG_URL_RE =
   /^https?:\/\/bugzilla\.mozilla\.org\/show_bug\.cgi\?(?:[^#]*&)?id=(\d+)(?:[&#].*)?$/;
 const SHORT_URL_RE = /^(?:https?:\/\/)?bugzil\.la\/(\d+)\/?(?:[?#].*)?$/;
 // Mozilla has only one Bugzilla, so a number alone is a bug.
-const NUMBER_RE = /^(\d+)$/;
+const NUMBER_RE = /^(?:bug\s+)?(\d+)$/i;
 const API_TIMEOUT_SECONDS = 10;
 
 function parseBugUrl(text) {
