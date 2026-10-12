@@ -11,17 +11,17 @@ Project decisions for Claude Code sessions on macOS and Windows. README.md and W
 - Markdown link text escapes only backslashes and unpaired brackets. Paired brackets, as in `[Thundermail] summary`, stay as they are.
 - Triggers: `:ghl` and `:ghhtml` for GitHub issues, `:zdl` and `:zdhtml` for Zendesk tickets (`tbpro.zendesk.com` only), `:bugl` and `:bughtml` for Mozilla Bugzilla bugs (public bugs only).
 - Tests: `uv run --with pytest --with pyperclip pytest tests`.
-- `macos/shortcuts/` has the macOS Quick Actions (issues #14 and #17) and the script that builds and signs them. Do not edit the `.shortcut` files. Change `build_shortcuts.py` or `github_link.js` and run `build_shortcuts.py`. It rewrites all files, so restore the `.shortcut` files that you did not change.
-- `github_link.js` runs with `osascript -l JavaScript`, so you can test it in the terminal. The build puts it in single quotes in a shell script, so it must not contain single quotes.
+- `macos/shortcuts/` has the macOS Quick Actions (issues #14, #17, and #22) and the script that builds and signs them. Do not edit the `.shortcut` files. Change `build_shortcuts.py`, `github_link.js`, or `bugzilla_link.js` and run `build_shortcuts.py`. It rewrites all files, so restore the `.shortcut` files that you did not change.
+- `github_link.js` and `bugzilla_link.js` run with `osascript -l JavaScript`, so you can test them in the terminal. The build puts them in single quotes in a shell script, so they must not contain single quotes.
 
 ## Quick Action decisions
 
-- Keys: Command-Control-Z for Zendesk and Control-Command-G for GitHub. Add Shift for the HTML version. KeyGap showed Command-Control-Z as free in Firefox, Safari, Chrome, Warp, iTerm, Terminal, Notion, and VS Code.
+- Keys: Command-Control-Z for Zendesk, Control-Command-G for GitHub, and Control-Command-U for Bugzilla. Add Shift for the HTML version. Windows uses the same letters with Ctrl+Win. Bugzilla does not use B, because Windows uses Shift+Ctrl+Win+B to restart the graphics driver. KeyGap showed Command-Control-Z and Control-Command-U as free in Firefox, Safari, Chrome, Warp, iTerm, Terminal, Notion, and VS Code.
 - The Markdown Quick Actions replace the selection. The HTML Quick Actions copy the link and do not change the selection, and the user presses Command-V. This is the only method that worked in Gmail in Firefox.
 - The Quick Actions do not use espanso, uv, or Python, because a Quick Action does not get the login shell `PATH`. The Zendesk Markdown Quick Action uses only Shortcuts actions.
 - If `/opt/homebrew/bin/gh` or `/usr/local/bin/gh` exists, the GitHub Quick Actions use its token. Other ways to give a token are still open.
 - The README documents import and building by hand, because we do not know whether colleagues can import the files.
-- Windows uses AutoHotkey v2 for the same hotkeys: issue #15 for Zendesk and issue #18 for GitHub.
+- Windows uses AutoHotkey v2 for the same hotkeys: issue #15 for Zendesk, issue #18 for GitHub, and issue #23 for Bugzilla.
 
 ## macOS Shortcuts facts that caused bugs
 

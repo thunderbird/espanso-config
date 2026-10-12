@@ -56,7 +56,7 @@ In Zendesk, `:ghl`, `:zdl`, and `:bugl` expand to HTML links instead of Markdown
 
 ## macOS Quick Actions: selected text to a link
 
-Four Quick Actions for the macOS Shortcuts app change selected text into a link. A Quick Action is a shortcut that runs on the selected text in any app. The Quick Actions do not use espanso, uv, or Python.
+Six Quick Actions for the macOS Shortcuts app change selected text into a link. A Quick Action is a shortcut that runs on the selected text in any app. The Quick Actions do not use espanso, uv, or Python.
 
 Two Quick Actions change a selected ticket number into a Zendesk ticket link:
 
@@ -71,13 +71,21 @@ Two Quick Actions change a selected GitHub issue URL into a link with the issue 
 - The Quick Actions get the title from the GitHub API. If the GitHub CLI (`gh`) is installed with Homebrew and you are logged in, they send its token, so private repositories also work. Without a token, only public repositories work, and GitHub allows 60 requests an hour.
 - If the selection is not a GitHub issue URL, or the API call fails, both Quick Actions show the error in a notification. The selection does not change.
 
+Two Quick Actions change a selected Mozilla Bugzilla bug URL into a link with the bug summary, the same link that `:bugl` makes:
+
+- Bugzilla Link, Control-Command-U: replaces the selection with the Markdown link.
+- Bugzilla HTML Link, Shift-Control-Command-U: copies a rich text link and does not change the selection. Press Command-V to replace the selection with the link.
+- The Quick Actions accept the long URL, `https://bugzilla.mozilla.org/show_bug.cgi?id=2064458`, and the short URL, `bugzil.la/2064458`. The link always uses the long URL.
+- The Quick Actions get the summary from the Bugzilla REST API without an API key, so they work only for public bugs.
+- If the selection is not a Bugzilla bug URL, or the API call fails, both Quick Actions show the error in a notification. The selection does not change.
+
 Gmail in Firefox does not accept a rich text link from a Quick Action. For this reason, the HTML Quick Actions copy the link, and you paste it.
 
 ### Install by import
 
 1. Download the `.shortcut` files that you want from `macos/shortcuts/`.
 2. Double-click each file and select "Add Shortcut".
-3. In Shortcuts, open Settings > Advanced and turn on "Allow Running Scripts". The HTML Quick Actions and the GitHub Quick Actions need it.
+3. In Shortcuts, open Settings > Advanced and turn on "Allow Running Scripts". The HTML Quick Actions, the GitHub Quick Actions, and the Bugzilla Quick Actions need it.
 4. Add the keyboard shortcuts. Open System Settings > Keyboard > Keyboard Shortcuts > Services. In the Text group, double-click to the right of the Quick Action name and press its keys from the lists above.
 
 If a shortcut with the same name exists, Shortcuts adds the new one with a number, for example "Zendesk HTML Link 1". Delete the old shortcut before you import a new version, and add the keyboard shortcut again.
@@ -127,9 +135,15 @@ To make a GitHub Quick Action by hand, save `macos/shortcuts/github_link.js` in 
 4. "If" with Matches and "has any value". After "If", add "Show Notification" with Shell Script Result.
 5. For GitHub Link only, add "Stop and Output" with Shell Script Result after "Otherwise".
 
+To make a Bugzilla Quick Action by hand, save `macos/shortcuts/bugzilla_link.js` in your home folder. Then make a Quick Action with the same actions as a GitHub Quick Action, but use this script in "Run Shell Script". For Bugzilla HTML Link, change `markdown` to `html`.
+
+```sh
+osascript -l JavaScript ~/bugzilla_link.js markdown "$1"
+```
+
 ### Change the Quick Actions
 
-`macos/shortcuts/build_shortcuts.py` makes the `.shortcut` files and signs them with `shortcuts sign`. It puts `macos/shortcuts/github_link.js` in the GitHub Quick Actions. After you change one of the two files, run the build script on a Mac:
+`macos/shortcuts/build_shortcuts.py` makes the `.shortcut` files and signs them with `shortcuts sign`. It puts `macos/shortcuts/github_link.js` in the GitHub Quick Actions and `macos/shortcuts/bugzilla_link.js` in the Bugzilla Quick Actions. After you change one of the three files, run the build script on a Mac:
 
 ```sh
 uv run macos/shortcuts/build_shortcuts.py
