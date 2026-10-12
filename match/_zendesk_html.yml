@@ -1,4 +1,4 @@
-# HTML versions of ":ghl" and ":zdl". Espanso does not load files that
+# HTML versions of ":ghl", ":zdl", and ":bugl". Espanso does not load files that
 # start with "_" by default. config/zendesk.yml includes this file in Zendesk.
 matches:
   - trigger: ":ghl"
@@ -16,3 +16,11 @@ matches:
         type: shell
         params:
           cmd: 'sh "$CONFIG/scripts/run_uv_script.sh" zd_ticket_link.py --html'
+
+  - trigger: ":bugl"
+    html: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: 'sh "$CONFIG/scripts/run_uv_script.sh" bugzilla_link.py --html'

@@ -1,0 +1,11 @@
+# Copy a Bugzilla bug URL and type ":bughtml". The trigger expands to an
+# HTML link, <a href="bug URL">Bug number: summary</a>, in any app that
+# accepts rich text. The clipboard does not change.
+matches:
+  - trigger: ":bughtml"
+    html: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: 'sh "$CONFIG/scripts/run_uv_script.sh" bugzilla_link.py --html'

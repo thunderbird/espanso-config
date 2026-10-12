@@ -6,8 +6,10 @@ Project decisions for Claude Code sessions on macOS and Windows. README.md and W
 
 - `scripts/*.py` are uv scripts with inline dependencies (only `pyperclip`). macOS and Windows share them.
 - `match/` and `scripts/run_uv_script.sh` are for macOS only. `windows/match/` is for Windows only, with the same file names and triggers.
-- If the window title contains "Zendesk", `config/zendesk.yml` and the `_zendesk_html.yml` files make `:ghl` and `:zdl` expand to HTML. Espanso does not load match files that start with `_` by default.
-- Triggers: `:ghl` and `:ghhtml` for GitHub issues, `:zdl` and `:zdhtml` for Zendesk tickets (`tbpro.zendesk.com` only).
+- If the window title contains "Zendesk" and the program is a browser (`filter_exec`), `config/zendesk.yml` and the `_zendesk_html.yml` files make `:ghl`, `:zdl`, and `:bugl` expand to HTML. Espanso does not load match files that start with `_` by default.
+- The title filter alone is not enough: VS Code puts the first line of an untitled file in the window title, so a `:zdl` link there made VS Code get HTML.
+- Markdown link text escapes only backslashes and unpaired brackets. Paired brackets, as in `[Thundermail] summary`, stay as they are.
+- Triggers: `:ghl` and `:ghhtml` for GitHub issues, `:zdl` and `:zdhtml` for Zendesk tickets (`tbpro.zendesk.com` only), `:bugl` and `:bughtml` for Mozilla Bugzilla bugs (public bugs only).
 - Tests: `uv run --with pytest --with pyperclip pytest tests`.
 
 ## Espanso facts that caused bugs
@@ -19,6 +21,7 @@ Project decisions for Claude Code sessions on macOS and Windows. README.md and W
 - On Windows, espanso runs `shell` vars in PowerShell.
 - After an HTML expansion, espanso restores only plain text to the clipboard. For this reason, `--html` mode does not change the clipboard.
 - Test a match without typing: `espanso match list -t --title "<window title>"`. To load other files, set `ESPANSO_CONFIG_DIR` to a temporary folder.
+- Espanso watches its own config folder, not the repo files behind the symlinks. After you change a linked file, run `espanso restart`.
 - On Windows, `espanso` is a GUI program and prints nothing in PowerShell, also with a pipe. `$config = espanso path config` was empty, so the install copied the scripts to `C:\scripts`. Use `espansod <command> | Out-String`.
 - On Windows, espanso ignores keystrokes from Synergy and similar software, because they have no HID device. The Windows laptop uses Synergy, so its `default.yml` has `win32_exclude_orphan_events: false`.
 - `%CONFIG%` is the espanso config root (`%APPDATA%\espanso` on Windows), not its `config` subfolder. The scripts go in `%CONFIG%\scripts`.

@@ -1,9 +1,13 @@
-# In Zendesk, ":ghl" and ":zdl" expand to HTML links instead of Markdown.
+# In Zendesk, ":ghl", ":zdl", and ":bugl" expand to HTML links instead of Markdown.
 # Zendesk runs in a browser, so this matches the window title, which
-# contains the title of the active tab.
+# contains the title of the active tab. Espanso applies this file only if
+# both filters match. The filter_exec filter stops other apps, for example
+# a VS Code tab with "Zendesk" in its first line, from getting HTML links.
 filter_title: "Zendesk"
+filter_exec: "(?i)(firefox|chrome|edge|safari)"
 extra_includes:
   - "../match/_zendesk_html.yml"
 extra_excludes:
   - "../match/gh_issue_link.yml"
   - "../match/zd_ticket_link.yml"
+  - "../match/bugzilla_link.yml"
