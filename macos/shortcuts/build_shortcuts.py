@@ -63,7 +63,9 @@ BUGZILLA_JS = (Path(__file__).parent / "bugzilla_link.js").read_text(encoding="u
 def osascript_line(js: str, name: str, mode: str) -> str:
     if "'" in js:
         raise ValueError(f"{name} must not contain single quotes")
-    return f"osascript -l JavaScript -e '{js}' {mode} \"$1\"\n"
+    # osascript adds a newline after the result, and "Run Shell Script" keeps
+    # it. The command substitution removes it.
+    return f"printf %s \"$(osascript -l JavaScript -e '{js}' {mode} \"$1\")\"\n"
 
 
 def github_script(mode: str) -> str:

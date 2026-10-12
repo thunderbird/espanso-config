@@ -49,7 +49,7 @@ def test_github_markdown_workflow_outputs_script_result():
         "conditional",
     ]
     script = workflow["WFWorkflowActions"][1]["WFWorkflowActionParameters"]["Script"]
-    assert script.endswith(' markdown "$1"\n')
+    assert script.endswith(' markdown "$1")"\n')
 
 
 def test_github_html_workflow_has_no_output():
@@ -58,7 +58,7 @@ def test_github_html_workflow_has_no_output():
         "detect.text", "runshellscript", "text.match", "conditional", "notification", "conditional", "conditional",
     ]
     script = workflow["WFWorkflowActions"][1]["WFWorkflowActionParameters"]["Script"]
-    assert script.endswith(' html "$1"\n')
+    assert script.endswith(' html "$1")"\n')
 
 
 def test_github_js_has_no_single_quotes():
@@ -74,8 +74,8 @@ def test_bugzilla_markdown_workflow_outputs_script_result():
     params = workflow["WFWorkflowActions"][4]["WFWorkflowActionParameters"]
     assert params["WFNotificationActionTitle"] == "No Bugzilla link"
     script = workflow["WFWorkflowActions"][1]["WFWorkflowActionParameters"]["Script"]
-    assert script.startswith("osascript -l JavaScript -e '")
-    assert script.endswith(' markdown "$1"\n')
+    assert script.startswith("printf %s \"$(osascript -l JavaScript -e '")
+    assert script.endswith(' markdown "$1")"\n')
     assert "GH_TOKEN" not in script
 
 
@@ -85,7 +85,7 @@ def test_bugzilla_html_workflow_has_no_output():
         "detect.text", "runshellscript", "text.match", "conditional", "notification", "conditional", "conditional",
     ]
     script = workflow["WFWorkflowActions"][1]["WFWorkflowActionParameters"]["Script"]
-    assert script.endswith(' html "$1"\n')
+    assert script.endswith(' html "$1")"\n')
 
 
 def test_bugzilla_js_has_no_single_quotes():

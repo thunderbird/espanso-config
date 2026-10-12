@@ -128,7 +128,7 @@ To make a GitHub Quick Action by hand, save `macos/shortcuts/github_link.js` in 
 
    ```sh
    [ -x /opt/homebrew/bin/gh ] && export GH_TOKEN="$(/opt/homebrew/bin/gh auth token 2>/dev/null)"
-   osascript -l JavaScript ~/github_link.js markdown "$1"
+   printf %s "$(osascript -l JavaScript ~/github_link.js markdown "$1")"
    ```
 
 3. "Match Text" with the pattern `^Error:` in Shell Script Result.
@@ -138,7 +138,7 @@ To make a GitHub Quick Action by hand, save `macos/shortcuts/github_link.js` in 
 To make a Bugzilla Quick Action by hand, save `macos/shortcuts/bugzilla_link.js` in your home folder. Then make a Quick Action with the same actions as a GitHub Quick Action, but use this script in "Run Shell Script". For Bugzilla HTML Link, change `markdown` to `html`.
 
 ```sh
-osascript -l JavaScript ~/bugzilla_link.js markdown "$1"
+printf %s "$(osascript -l JavaScript ~/bugzilla_link.js markdown "$1")"
 ```
 
 ### Change the Quick Actions

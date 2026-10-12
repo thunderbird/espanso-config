@@ -32,6 +32,7 @@ Project decisions for Claude Code sessions on macOS and Windows. README.md and W
 - To find the parameter names of an action, search the dyld shared cache in `/System/Volumes/Preboot/Cryptexes/OS/System/Library/dyld/` for the action name, for example `Run Shell Script (Action Name)`.
 - Firefox ignores rich text that a Quick Action returns. "Copy to Clipboard" copies rich text only as UTF-16 `public.html`, and Gmail in Firefox pastes nothing. For this reason, the HTML Quick Action copies UTF-8 HTML and plain text with `NSPasteboard` in a shell script.
 - A Quick Action with no output does not change the selection.
+- "Run Shell Script" keeps the newline that `osascript` adds after the result, and the Markdown link then ends with a newline. The scripts use `printf %s "$(osascript ...)"` to remove it.
 - "Run Shell Script" needs Shortcuts > Settings > Advanced > "Allow Running Scripts".
 - `NSURLConnection` in JavaScript for Automation crashes `osascript` (exit code 139). `github_link.js` calls `curl` with `doShellScript`.
 - `shortcuts sign` uses an Apple server and sometimes times out. Run the build again.
