@@ -57,7 +57,7 @@ def test_make_link(monkeypatch):
     monkeypatch.setattr(bugzilla_link, "fetch_bug", fake_fetch)
     link = bugzilla_link.make_link("bugzil.la/7")
     assert link == (
-        r"[Bug 7: \[Thundermail\] Fix \[thing\]]"
+        "[Bug 7: [Thundermail] Fix [thing]]"
         "(https://bugzilla.mozilla.org/show_bug.cgi?id=7)"
     )
 

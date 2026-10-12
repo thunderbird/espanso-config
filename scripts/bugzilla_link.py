@@ -53,7 +53,23 @@ def bug_url(number: int) -> str:
 
 
 def escape_markdown_link_text(title: str) -> str:
-    return re.sub(r"([\\\[\]])", r"\\\1", title)
+    # Paired brackets are valid in Markdown link text, so escape only
+    # backslashes and brackets without a partner.
+    chars = list(title)
+    open_brackets = []
+    for i, c in enumerate(chars):
+        if c == "\\":
+            chars[i] = "\\\\"
+        elif c == "[":
+            open_brackets.append(i)
+        elif c == "]":
+            if open_brackets:
+                open_brackets.pop()
+            else:
+                chars[i] = "\\]"
+    for i in open_brackets:
+        chars[i] = "\\["
+    return "".join(chars)
 
 
 def fetch_bug(number: int) -> dict:

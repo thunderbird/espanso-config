@@ -39,18 +39,29 @@ def test_parse_issue_url_rejects(text):
         gh_issue_link.parse_issue_url(text)
 
 
-def test_escape_markdown_link_text():
-    assert gh_issue_link.escape_markdown_link_text(r"[bug] a\b ]") == r"\[bug\] a\\b \]"
+@pytest.mark.parametrize(
+    "title, expected",
+    [
+        ("[bug] fix", "[bug] fix"),
+        ("[a [b]] c", "[a [b]] c"),
+        ("a ] b", r"a \] b"),
+        ("a [ b", r"a \[ b"),
+        ("] [x] [", r"\] [x] \["),
+        (r"a\b", r"a\\b"),
+    ],
+)
+def test_escape_markdown_link_text(title, expected):
+    assert gh_issue_link.escape_markdown_link_text(title) == expected
 
 
 def test_make_link(monkeypatch):
     def fake_fetch(owner, repo, number, token):
         assert (owner, repo, number, token) == ("o", "r", 7, "tok")
-        return {"title": "Fix [thing]", "html_url": "https://github.com/o/r/issues/7"}
+        return {"title": "Fix [thing] ]", "html_url": "https://github.com/o/r/issues/7"}
 
     monkeypatch.setattr(gh_issue_link, "fetch_issue", fake_fetch)
     link = gh_issue_link.make_link("https://github.com/o/r/issues/7", "tok")
-    assert link == r"[r #7: Fix \[thing\]](https://github.com/o/r/issues/7)"
+    assert link == r"[r #7: Fix [thing] \]](https://github.com/o/r/issues/7)"
 
 
 def test_make_link_transferred_issue(monkeypatch):
