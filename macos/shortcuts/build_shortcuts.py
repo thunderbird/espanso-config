@@ -3,19 +3,21 @@
 # requires-python = ">=3.10"
 # dependencies = []
 # ///
-"""Build the Zendesk Quick Action shortcuts for the macOS Shortcuts app.
+"""Build the Zendesk and GitHub Quick Actions for the macOS Shortcuts app.
 
 Writes unsigned shortcut files and signs them with `shortcuts sign`, so
 that other people can import them. Each Quick Action gets the selected
-text and finds the first number in it.
+text. The Zendesk Quick Actions find the first number in it. The GitHub
+Quick Actions need a GitHub issue URL and get the title from the GitHub API
+with github_link.js.
 
-"Zendesk Link" replaces the selection with a Markdown link. "Zendesk HTML
-Link" copies an HTML link, with the Markdown link as plain text, and does
-not change the selection, so that Command-V replaces it. A Quick Action
-cannot replace the selection with rich text in Firefox, and the Shortcuts
-"Copy to Clipboard" action copies HTML in a format that Firefox cannot
-paste. If the selection has no number, both Quick Actions show a
-notification and do not change the selection.
+The Markdown Quick Actions replace the selection with a Markdown link. The
+HTML Quick Actions copy an HTML link, with the Markdown link as plain text,
+and do not change the selection, so that Command-V replaces it. A Quick
+Action cannot replace the selection with rich text in Firefox, and the
+Shortcuts "Copy to Clipboard" action copies HTML in a format that Firefox
+cannot paste. On error, the Quick Actions show a notification and do not
+change the selection.
 """
 
 from __future__ import annotations
@@ -29,10 +31,12 @@ import uuid
 from pathlib import Path
 
 ZENDESK_TICKET_URL = "https://tbpro.zendesk.com/agent/tickets/"
-OBJECT_REPLACEMENT = "￼"
+OBJECT_REPLACEMENT = "\ufffc"
 
-MARKDOWN_NAME = "Zendesk Link"
-HTML_NAME = "Zendesk HTML Link"
+ZENDESK_NAME = "Zendesk Link"
+ZENDESK_HTML_NAME = "Zendesk HTML Link"
+GITHUB_NAME = "GitHub Link"
+GITHUB_HTML_NAME = "GitHub HTML Link"
 
 # Gets the ticket number as $1 and puts the HTML link and the Markdown link
 # on the clipboard as UTF-8.
@@ -48,6 +52,25 @@ function run(argv) {{
   pasteboard.setStringForType($(`[${{text}}](${{url}})`), $("public.utf8-plain-text"));
 }}' "$1"
 """
+
+GITHUB_JS = (Path(__file__).parent / "github_link.js").read_text(encoding="utf-8")
+
+
+def github_script(mode: str) -> str:
+    """Make the shell script that runs github_link.js on $1.
+
+    The script uses the GitHub CLI token if gh is installed, because a token
+    gives access to private repositories and a higher API rate limit.
+    """
+    if "'" in GITHUB_JS:
+        raise ValueError("github_link.js must not contain single quotes")
+    return (
+        "for gh in /opt/homebrew/bin/gh /usr/local/bin/gh; do\n"
+        '  [ -z "$GH_TOKEN" ] && [ -x "$gh" ] && GH_TOKEN="$("$gh" auth token 2>/dev/null)"\n'
+        "done\n"
+        "export GH_TOKEN\n"
+        f"osascript -l JavaScript -e '{GITHUB_JS}' {mode} \"$1\"\n"
+    )
 
 
 def new_uuid() -> str:
@@ -124,7 +147,7 @@ def html_actions(number: dict) -> list[dict]:
     ]
 
 
-def build_workflow(as_html: bool) -> dict:
+def build_zendesk_workflow(as_html: bool) -> dict:
     match_uuid = new_uuid()
     item_uuid = new_uuid()
     group = new_uuid()
@@ -161,7 +184,66 @@ def build_workflow(as_html: bool) -> dict:
         ),
         action("conditional", GroupingIdentifier=group, WFControlFlowMode=2),
     ]
+    return workflow(actions)
 
+
+def build_github_workflow(as_html: bool) -> dict:
+    text_uuid = new_uuid()
+    script_uuid = new_uuid()
+    match_uuid = new_uuid()
+    group = new_uuid()
+    result = action_output(script_uuid, "Shell Script Result")
+    error = action_output(match_uuid, "Matches")
+
+    actions = [
+        # Make plain text from a rich text selection or a file.
+        action("detect.text", UUID=text_uuid, WFInput=attachment(shortcut_input())),
+        action(
+            "runshellscript",
+            UUID=script_uuid,
+            Script=github_script("html" if as_html else "markdown"),
+            Shell="/bin/zsh",
+            Input=attachment(action_output(text_uuid, "Text")),
+            InputMode="as arguments",
+            RunAsRoot=False,
+        ),
+        action(
+            "text.match",
+            UUID=match_uuid,
+            WFMatchTextPattern="^Error:",
+            text=token_string(result),
+        ),
+        # 100 is "has any value".
+        action(
+            "conditional",
+            GroupingIdentifier=group,
+            WFControlFlowMode=0,
+            WFCondition=100,
+            WFInput={"Type": "Variable", "Variable": attachment(error)},
+        ),
+        action(
+            "notification",
+            WFNotificationActionTitle="No GitHub link",
+            WFNotificationActionBody=token_string(result),
+            WFNotificationActionSound=False,
+        ),
+        action("conditional", GroupingIdentifier=group, WFControlFlowMode=1),
+    ]
+    if not as_html:
+        actions.append(
+            action(
+                "output",
+                WFOutput=token_string(result),
+                WFNoOutputSurfaceBehavior="Do Nothing",
+            )
+        )
+    # The HTML script already copied the link. No output, so the selection
+    # stays and Command-V replaces it.
+    actions.append(action("conditional", GroupingIdentifier=group, WFControlFlowMode=2))
+    return workflow(actions)
+
+
+def workflow(actions: list[dict]) -> dict:
     return {
         "WFWorkflowActions": actions,
         "WFWorkflowClientVersion": "2607.0.3",
@@ -200,9 +282,14 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    for name, as_html in ((MARKDOWN_NAME, False), (HTML_NAME, True)):
+    for name, build, as_html in (
+        (ZENDESK_NAME, build_zendesk_workflow, False),
+        (ZENDESK_HTML_NAME, build_zendesk_workflow, True),
+        (GITHUB_NAME, build_github_workflow, False),
+        (GITHUB_HTML_NAME, build_github_workflow, True),
+    ):
         output = args.output_dir / f"{name}.shortcut"
-        write_signed(build_workflow(as_html), output)
+        write_signed(build(as_html), output)
         print(f"Wrote {output}")
     return 0
 

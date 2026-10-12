@@ -54,28 +54,37 @@ The script gets the summary from the Bugzilla REST API without an API key, so it
 
 In Zendesk, `:ghl`, `:zdl`, and `:bugl` expand to HTML links instead of Markdown. Espanso finds Zendesk by the window title and the program, so the browser tab title must contain "Zendesk", and the browser must be Firefox, Chrome, Edge, or Safari. Other apps, for example VS Code, always get Markdown, also if their window title contains "Zendesk". To add another HTML app, add a configuration file like `config/zendesk.yml` with a different `filter_title`.
 
-## macOS Quick Actions: selected ticket number to a Zendesk link
+## macOS Quick Actions: selected text to a link
 
-Two Quick Actions for the macOS Shortcuts app change a selected ticket number into a Zendesk ticket link. A Quick Action is a shortcut that runs on the selected text in any app. The Quick Actions do not use espanso, uv, or Python.
+Four Quick Actions for the macOS Shortcuts app change selected text into a link. A Quick Action is a shortcut that runs on the selected text in any app. The Quick Actions do not use espanso, uv, or Python.
+
+Two Quick Actions change a selected ticket number into a Zendesk ticket link:
 
 - Zendesk Link, Command-Control-Z: replaces the selection with the Markdown link, for example `[Zendesk ticket #8486](https://tbpro.zendesk.com/agent/tickets/8486)`.
 - Zendesk HTML Link, Shift-Command-Control-Z: copies a rich text link and does not change the selection. Press Command-V to replace the selection with the link. Apps that do not accept rich text, for example VS Code, paste the Markdown link.
 - If the selection has no number, both Quick Actions show a notification and do not change the selection. If the selection has more than one number, they use the first number.
 
-Gmail in Firefox does not accept a rich text link from a Quick Action. For this reason, the HTML Quick Action copies the link, and you paste it.
+Two Quick Actions change a selected GitHub issue URL into a link with the issue title, the same link that `:ghl` makes:
+
+- GitHub Link, Control-Command-G: replaces the selection with the Markdown link.
+- GitHub HTML Link, Shift-Control-Command-G: copies a rich text link and does not change the selection. Press Command-V to replace the selection with the link.
+- The Quick Actions get the title from the GitHub API. If the GitHub CLI (`gh`) is installed with Homebrew and you are logged in, they send its token, so private repositories also work. Without a token, only public repositories work, and GitHub allows 60 requests an hour.
+- If the selection is not a GitHub issue URL, or the API call fails, both Quick Actions show the error in a notification. The selection does not change.
+
+Gmail in Firefox does not accept a rich text link from a Quick Action. For this reason, the HTML Quick Actions copy the link, and you paste it.
 
 ### Install by import
 
-1. Download `macos/shortcuts/Zendesk Link.shortcut` and `macos/shortcuts/Zendesk HTML Link.shortcut`.
+1. Download the `.shortcut` files that you want from `macos/shortcuts/`.
 2. Double-click each file and select "Add Shortcut".
-3. In Shortcuts, open Settings > Advanced and turn on "Allow Running Scripts". The HTML Quick Action needs it.
-4. Add the keyboard shortcuts. Open System Settings > Keyboard > Keyboard Shortcuts > Services. In the Text group, double-click to the right of "Zendesk Link" and press Command-Control-Z. Do the same for "Zendesk HTML Link" with Shift-Command-Control-Z.
+3. In Shortcuts, open Settings > Advanced and turn on "Allow Running Scripts". The HTML Quick Actions and the GitHub Quick Actions need it.
+4. Add the keyboard shortcuts. Open System Settings > Keyboard > Keyboard Shortcuts > Services. In the Text group, double-click to the right of the Quick Action name and press its keys from the lists above.
 
 If a shortcut with the same name exists, Shortcuts adds the new one with a number, for example "Zendesk HTML Link 1". Delete the old shortcut before you import a new version, and add the keyboard shortcut again.
 
 ### Build by hand
 
-If you cannot import the files, make each Quick Action in the Shortcuts app:
+If you cannot import the files, make each Zendesk Quick Action in the Shortcuts app:
 
 1. Select File > New Shortcut, and give it the name "Zendesk Link" or "Zendesk HTML Link".
 2. Open the shortcut details with the "i" button. Turn on "Use as Quick Action" and "Services Menu", and set it to receive Text.
@@ -104,9 +113,23 @@ If you cannot import the files, make each Quick Action in the Shortcuts app:
 8. After "Otherwise", add "Show Notification" with the text "Select text that contains a ticket number."
 9. Do steps 3 and 4 of "Install by import".
 
+To make a GitHub Quick Action by hand, save `macos/shortcuts/github_link.js` in your home folder, and make a Quick Action with these actions:
+
+1. "Get Text from Input" with Shortcut Input.
+2. "Run Shell Script" with the shell zsh and "Pass Input" set to "as arguments". Set the input to Text, and use this script. For GitHub HTML Link, change `markdown` to `html`.
+
+   ```sh
+   [ -x /opt/homebrew/bin/gh ] && export GH_TOKEN="$(/opt/homebrew/bin/gh auth token 2>/dev/null)"
+   osascript -l JavaScript ~/github_link.js markdown "$1"
+   ```
+
+3. "Match Text" with the pattern `^Error:` in Shell Script Result.
+4. "If" with Matches and "has any value". After "If", add "Show Notification" with Shell Script Result.
+5. For GitHub Link only, add "Stop and Output" with Shell Script Result after "Otherwise".
+
 ### Change the Quick Actions
 
-`macos/shortcuts/build_shortcuts.py` makes the two `.shortcut` files and signs them with `shortcuts sign`. After you change the script, run it on a Mac:
+`macos/shortcuts/build_shortcuts.py` makes the `.shortcut` files and signs them with `shortcuts sign`. It puts `macos/shortcuts/github_link.js` in the GitHub Quick Actions. After you change one of the two files, run the build script on a Mac:
 
 ```sh
 uv run macos/shortcuts/build_shortcuts.py

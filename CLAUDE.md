@@ -11,7 +11,8 @@ Project decisions for Claude Code sessions on macOS and Windows. README.md and W
 - Markdown link text escapes only backslashes and unpaired brackets. Paired brackets, as in `[Thundermail] summary`, stay as they are.
 - Triggers: `:ghl` and `:ghhtml` for GitHub issues, `:zdl` and `:zdhtml` for Zendesk tickets (`tbpro.zendesk.com` only), `:bugl` and `:bughtml` for Mozilla Bugzilla bugs (public bugs only).
 - Tests: `uv run --with pytest --with pyperclip pytest tests`.
-- `macos/shortcuts/` has the macOS Quick Actions (issue #14) and the script that builds and signs them. Do not edit the `.shortcut` files. Change `build_shortcuts.py` and run it.
+- `macos/shortcuts/` has the macOS Quick Actions (issues #14 and #17) and the script that builds and signs them. Do not edit the `.shortcut` files. Change `build_shortcuts.py` or `github_link.js` and run `build_shortcuts.py`. It rewrites all files, so restore the `.shortcut` files that you did not change.
+- `github_link.js` runs with `osascript -l JavaScript`, so you can test it in the terminal. The build puts it in single quotes in a shell script, so it must not contain single quotes.
 
 ## macOS Shortcuts facts that caused bugs
 
@@ -20,6 +21,9 @@ Project decisions for Claude Code sessions on macOS and Windows. README.md and W
 - Firefox ignores rich text that a Quick Action returns. "Copy to Clipboard" copies rich text only as UTF-16 `public.html`, and Gmail in Firefox pastes nothing. For this reason, the HTML Quick Action copies UTF-8 HTML and plain text with `NSPasteboard` in a shell script.
 - A Quick Action with no output does not change the selection.
 - "Run Shell Script" needs Shortcuts > Settings > Advanced > "Allow Running Scripts".
+- `NSURLConnection` in JavaScript for Automation crashes `osascript` (exit code 139). `github_link.js` calls `curl` with `doShellScript`.
+- `shortcuts sign` uses an Apple server and sometimes times out. Run the build again.
+- `shortcuts run -i <file>` gives the Quick Action a file, not text. "Get Text from Input" then gives the file path, so the GitHub Quick Actions fail in the terminal. Test them with a real selection.
 - `shortcuts run` and the importing of a file work from the terminal. Adding a shortcut, deleting it, and testing a keyboard shortcut need a person, because the terminal has no Accessibility permission.
 
 ## Espanso facts that caused bugs
