@@ -1,6 +1,6 @@
 # espanso-config
 
-Shared [espanso](https://espanso.org/) matches for macOS and Windows. For the Windows setup, read [WINDOWS.md](WINDOWS.md).
+Shared [espanso](https://espanso.org/) matches for macOS and Windows. For the Windows setup, read [WINDOWS.md](WINDOWS.md). To work on an issue with Claude Code, read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## `:ghl` and `:ghhtml`: GitHub issue URL to a link
 
