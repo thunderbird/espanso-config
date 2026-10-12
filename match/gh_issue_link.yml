@@ -1,0 +1,14 @@
+# Copy a GitHub issue URL and type ":ghlink". The trigger expands to a
+# Markdown link, [repo #number: title](issue URL), and the clipboard holds it too.
+# On error, the trigger expands to the error message.
+# config/gh_issue_link_zendesk.yml excludes this file in Zendesk and uses
+# match/_gh_issue_link_html.yml there.
+matches:
+  - trigger: ":ghlink"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          # Espanso sets $CONFIG to its configuration folder. %CONFIG% works only in "script" vars.
+          cmd: 'sh "$CONFIG/scripts/gh_issue_link.sh"'
