@@ -1,6 +1,6 @@
 # espanso-config
 
-Shared [espanso](https://espanso.org/) matches.
+Shared [espanso](https://espanso.org/) matches for macOS and Windows. For the Windows setup, read [WINDOWS.md](WINDOWS.md).
 
 ## `:ghl` and `:ghhtml`: GitHub issue URL to a link
 
@@ -43,7 +43,7 @@ In Zendesk, `:ghl` and `:zdl` expand to HTML links instead of Markdown. Espanso 
 - [uv](https://docs.astral.sh/uv/). The scripts declare their dependencies inline, and uv installs them on the first run.
 - Optional: the [GitHub CLI](https://cli.github.com/) (`gh`), logged in. The GitHub script uses `GITHUB_TOKEN`, `GH_TOKEN`, or `gh auth token`, in that order. A token gives access to private repositories and a higher API rate limit.
 
-## Install
+## Install on macOS
 
 Run these commands from the root of this repository:
 

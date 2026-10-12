@@ -1,0 +1,19 @@
+# Copy a GitHub issue URL and type ":ghl" to get a Markdown link.
+# Windows version of match/gh_issue_link.yml. On Windows, espanso runs "shell" vars in
+# PowerShell, so this file uses a "script" var, which runs uv directly.
+# Espanso replaces %CONFIG% in "script" args. "ignore_error: true" makes
+# espanso insert the error message, because the script exits with code 1 on errors.
+matches:
+  - trigger: ":ghl"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: script
+        params:
+          args:
+            - uv
+            - run
+            - --quiet
+            - --script
+            - "%CONFIG%/scripts/gh_issue_link.py"
+          ignore_error: true
