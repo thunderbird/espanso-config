@@ -11,6 +11,16 @@ Project decisions for Claude Code sessions on macOS and Windows. README.md and W
 - Markdown link text escapes only backslashes and unpaired brackets. Paired brackets, as in `[Thundermail] summary`, stay as they are.
 - Triggers: `:ghl` and `:ghhtml` for GitHub issues, `:zdl` and `:zdhtml` for Zendesk tickets (`tbpro.zendesk.com` only), `:bugl` and `:bughtml` for Mozilla Bugzilla bugs (public bugs only).
 - Tests: `uv run --with pytest --with pyperclip pytest tests`.
+- `macos/shortcuts/` has the macOS Quick Actions (issue #14) and the script that builds and signs them. Do not edit the `.shortcut` files. Change `build_shortcuts.py` and run it.
+
+## macOS Shortcuts facts that caused bugs
+
+- Some action fields take only a variable, for example `WFHTML` of "Make Rich Text from HTML" and `Input` of "Run Shell Script". A text value with a variable in it (`WFTextTokenString`) leaves the field empty. Use `WFTextTokenAttachment`.
+- To find the parameter names of an action, search the dyld shared cache in `/System/Volumes/Preboot/Cryptexes/OS/System/Library/dyld/` for the action name, for example `Run Shell Script (Action Name)`.
+- Firefox ignores rich text that a Quick Action returns. "Copy to Clipboard" copies rich text only as UTF-16 `public.html`, and Gmail in Firefox pastes nothing. For this reason, the HTML Quick Action copies UTF-8 HTML and plain text with `NSPasteboard` in a shell script.
+- A Quick Action with no output does not change the selection.
+- "Run Shell Script" needs Shortcuts > Settings > Advanced > "Allow Running Scripts".
+- `shortcuts run` and the importing of a file work from the terminal. Adding a shortcut, deleting it, and testing a keyboard shortcut need a person, because the terminal has no Accessibility permission.
 
 ## Espanso facts that caused bugs
 
