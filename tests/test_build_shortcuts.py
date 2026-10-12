@@ -18,8 +18,8 @@ def test_token_string_positions():
     assert list(value["attachmentsByRange"]) == ["{1, 1}", "{3, 1}"]
 
 
-def test_markdown_workflow_outputs_link():
-    workflow = build_shortcuts.build_workflow(as_html=False)
+def test_zendesk_markdown_workflow_outputs_link():
+    workflow = build_shortcuts.build_zendesk_workflow(as_html=False)
     assert identifiers(workflow) == [
         "text.match", "getitemfromlist", "conditional", "gettext", "output",
         "conditional", "notification", "conditional",
@@ -30,8 +30,8 @@ def test_markdown_workflow_outputs_link():
     )
 
 
-def test_html_workflow_copies_without_output():
-    workflow = build_shortcuts.build_workflow(as_html=True)
+def test_zendesk_html_workflow_copies_without_output():
+    workflow = build_shortcuts.build_zendesk_workflow(as_html=True)
     assert identifiers(workflow) == [
         "text.match", "getitemfromlist", "conditional", "runshellscript",
         "conditional", "notification", "conditional",
@@ -40,3 +40,26 @@ def test_html_workflow_copies_without_output():
     assert params["InputMode"] == "as arguments"
     assert params["Input"]["WFSerializationType"] == "WFTextTokenAttachment"
     assert 'pasteboard.setStringForType($(`<a href="${url}">${text}</a>`), $("public.html"));' in params["Script"]
+
+
+def test_github_markdown_workflow_outputs_script_result():
+    workflow = build_shortcuts.build_github_workflow(as_html=False)
+    assert identifiers(workflow) == [
+        "detect.text", "runshellscript", "text.match", "conditional", "notification", "conditional", "output",
+        "conditional",
+    ]
+    script = workflow["WFWorkflowActions"][1]["WFWorkflowActionParameters"]["Script"]
+    assert script.endswith(' markdown "$1"\n')
+
+
+def test_github_html_workflow_has_no_output():
+    workflow = build_shortcuts.build_github_workflow(as_html=True)
+    assert identifiers(workflow) == [
+        "detect.text", "runshellscript", "text.match", "conditional", "notification", "conditional", "conditional",
+    ]
+    script = workflow["WFWorkflowActions"][1]["WFWorkflowActionParameters"]["Script"]
+    assert script.endswith(' html "$1"\n')
+
+
+def test_github_js_has_no_single_quotes():
+    assert "'" not in build_shortcuts.GITHUB_JS
