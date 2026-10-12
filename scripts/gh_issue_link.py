@@ -6,8 +6,9 @@
 """Turn a GitHub issue URL in the clipboard into a Markdown link.
 
 Reads the clipboard, fetches the issue title from the GitHub API, and
-copies `[title](url)` back to the clipboard. Prints the link on success,
-or a message on error. On error, the clipboard does not change.
+copies `[repo #number: title](url)` back to the clipboard. Prints the
+link on success, or a message on error. On error, the clipboard does
+not change.
 
 Token lookup order: GITHUB_TOKEN, GH_TOKEN, then `gh auth token`.
 """
@@ -94,7 +95,13 @@ def make_link(clipboard_text: str, token: str | None) -> str:
     if not title:
         raise LinkError(f"GitHub API response for {owner}/{repo}#{number} has no title")
     url = issue.get("html_url") or f"https://github.com/{owner}/{repo}/issues/{number}"
-    return f"[{escape_markdown_link_text(title)}]({url})"
+    # A transferred issue has a new repo and number, so label it from html_url.
+    try:
+        _, repo, number = parse_issue_url(url)
+    except LinkError:
+        pass
+    text = f"{repo} #{number}: {title}"
+    return f"[{escape_markdown_link_text(text)}]({url})"
 
 
 def main() -> int:

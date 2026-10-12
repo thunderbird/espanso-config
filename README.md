@@ -4,10 +4,10 @@ Shared [espanso](https://espanso.org/) matches.
 
 ## `:ghlink`: GitHub issue URL to Markdown link
 
-Copy a GitHub issue URL, then type `:ghlink`. The trigger expands to a Markdown link with the issue title, and the clipboard also contains the link. For example:
+Copy a GitHub issue URL, then type `:ghlink`. The trigger expands to a Markdown link with the repository name, issue number, and issue title, and the clipboard also contains the link. For example:
 
 ```
-[Add macro that turns a GitHub issue URL in the clipboard into a Markdown link](https://github.com/thunderbird/espanso-config/issues/1)
+[espanso-config #1: Add macro that turns a GitHub issue URL in the clipboard into a Markdown link](https://github.com/thunderbird/espanso-config/issues/1)
 ```
 
 The script can fail for two reasons: the clipboard does not contain an issue URL, or the GitHub API call fails. On a failure, the trigger expands to an error message and the clipboard does not change.

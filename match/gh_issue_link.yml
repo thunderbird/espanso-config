@@ -1,5 +1,5 @@
 # Copy a GitHub issue URL and type ":ghlink". The trigger expands to a
-# Markdown link, [issue title](issue URL), and the clipboard holds it too.
+# Markdown link, [repo #number: title](issue URL), and the clipboard holds it too.
 # On error, the trigger expands to the error message.
 matches:
   - trigger: ":ghlink"

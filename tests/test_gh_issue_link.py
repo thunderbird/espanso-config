@@ -50,7 +50,17 @@ def test_make_link(monkeypatch):
 
     monkeypatch.setattr(gh_issue_link, "fetch_issue", fake_fetch)
     link = gh_issue_link.make_link("https://github.com/o/r/issues/7", "tok")
-    assert link == r"[Fix \[thing\]](https://github.com/o/r/issues/7)"
+    assert link == r"[r #7: Fix \[thing\]](https://github.com/o/r/issues/7)"
+
+
+def test_make_link_transferred_issue(monkeypatch):
+    monkeypatch.setattr(
+        gh_issue_link,
+        "fetch_issue",
+        lambda *a: {"title": "Moved", "html_url": "https://github.com/o/new/issues/42"},
+    )
+    link = gh_issue_link.make_link("https://github.com/o/r/issues/7", None)
+    assert link == "[new #42: Moved](https://github.com/o/new/issues/42)"
 
 
 def test_make_link_without_title(monkeypatch):
