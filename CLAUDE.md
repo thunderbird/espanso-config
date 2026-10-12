@@ -14,7 +14,19 @@ Project decisions for Claude Code sessions on macOS and Windows. README.md and W
 - `macos/shortcuts/` has the macOS Quick Actions (issues #14 and #17) and the script that builds and signs them. Do not edit the `.shortcut` files. Change `build_shortcuts.py` or `github_link.js` and run `build_shortcuts.py`. It rewrites all files, so restore the `.shortcut` files that you did not change.
 - `github_link.js` runs with `osascript -l JavaScript`, so you can test it in the terminal. The build puts it in single quotes in a shell script, so it must not contain single quotes.
 
+## Quick Action decisions
+
+- Keys: Command-Control-Z for Zendesk and Control-Command-G for GitHub. Add Shift for the HTML version. KeyGap showed Command-Control-Z as free in Firefox, Safari, Chrome, Warp, iTerm, Terminal, Notion, and VS Code.
+- The Markdown Quick Actions replace the selection. The HTML Quick Actions copy the link and do not change the selection, and the user presses Command-V. This is the only method that worked in Gmail in Firefox.
+- The Quick Actions do not use espanso, uv, or Python, because a Quick Action does not get the login shell `PATH`. The Zendesk Markdown Quick Action uses only Shortcuts actions.
+- If `/opt/homebrew/bin/gh` or `/usr/local/bin/gh` exists, the GitHub Quick Actions use its token. Other ways to give a token are still open.
+- The README documents import and building by hand, because we do not know whether colleagues can import the files.
+- Windows uses AutoHotkey v2 for the same hotkeys: issue #15 for Zendesk and issue #18 for GitHub.
+
 ## macOS Shortcuts facts that caused bugs
+
+- The "begins with" condition needs a parameter name that we did not find. To test text, use "Match Text" and the "has any value" condition (`WFCondition` 100).
+- Shortcuts imports a file with the name of an existing shortcut as "<name> 1". Delete the old shortcut first, and add the keyboard shortcut again.
 
 - Some action fields take only a variable, for example `WFHTML` of "Make Rich Text from HTML" and `Input` of "Run Shell Script". A text value with a variable in it (`WFTextTokenString`) leaves the field empty. Use `WFTextTokenAttachment`.
 - To find the parameter names of an action, search the dyld shared cache in `/System/Volumes/Preboot/Cryptexes/OS/System/Library/dyld/` for the action name, for example `Run Shell Script (Action Name)`.
