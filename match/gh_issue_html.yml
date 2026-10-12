@@ -8,4 +8,4 @@ matches:
       - name: output
         type: shell
         params:
-          cmd: 'sh "$CONFIG/scripts/gh_issue_link.sh" --html'
+          cmd: 'sh "$CONFIG/scripts/run_uv_script.sh" gh_issue_link.py --html'

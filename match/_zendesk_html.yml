@@ -1,0 +1,18 @@
+# HTML versions of ":ghlink" and ":zdl". Espanso does not load files that
+# start with "_" by default. config/zendesk.yml includes this file in Zendesk.
+matches:
+  - trigger: ":ghlink"
+    html: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: 'sh "$CONFIG/scripts/run_uv_script.sh" gh_issue_link.py --html'
+
+  - trigger: ":zdl"
+    html: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: 'sh "$CONFIG/scripts/run_uv_script.sh" zd_ticket_link.py --html'
