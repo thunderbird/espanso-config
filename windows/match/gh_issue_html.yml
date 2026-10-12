@@ -1,0 +1,20 @@
+# Copy a GitHub issue URL and type ":ghhtml" to get an HTML link.
+# Windows version of match/gh_issue_html.yml. On Windows, espanso runs "shell" vars in
+# PowerShell, so this file uses a "script" var, which runs uv directly.
+# Espanso replaces %CONFIG% in "script" args. "ignore_error: true" makes
+# espanso insert the error message, because the script exits with code 1 on errors.
+matches:
+  - trigger: ":ghhtml"
+    html: "{{output}}"
+    vars:
+      - name: output
+        type: script
+        params:
+          args:
+            - uv
+            - run
+            - --quiet
+            - --script
+            - "%CONFIG%/scripts/gh_issue_link.py"
+            - --html
+          ignore_error: true

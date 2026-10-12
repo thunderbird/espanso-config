@@ -1,0 +1,34 @@
+# Windows version of match/_zendesk_html.yml: HTML versions of ":ghl" and ":zdl".
+# Espanso does not load files that start with "_" by default.
+# config/zendesk.yml includes this file in Zendesk.
+# See windows/match/gh_issue_link.yml for why this file uses "script" vars.
+matches:
+  - trigger: ":ghl"
+    html: "{{output}}"
+    vars:
+      - name: output
+        type: script
+        params:
+          args:
+            - uv
+            - run
+            - --quiet
+            - --script
+            - "%CONFIG%/scripts/gh_issue_link.py"
+            - --html
+          ignore_error: true
+
+  - trigger: ":zdl"
+    html: "{{output}}"
+    vars:
+      - name: output
+        type: script
+        params:
+          args:
+            - uv
+            - run
+            - --quiet
+            - --script
+            - "%CONFIG%/scripts/zd_ticket_link.py"
+            - --html
+          ignore_error: true
