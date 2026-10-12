@@ -8,6 +8,6 @@ matches:
       - name: output
         type: shell
         params:
-          # Espanso runs with a minimal PATH, so add the usual uv and gh locations.
-          # "|| true" makes espanso insert the error text instead of failing silently.
-          cmd: 'PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH" uv run --quiet --script "%CONFIG%/scripts/gh_issue_link.py" || true'
+          # Espanso sets $CONFIG to its configuration folder. %CONFIG% works only in "script" vars.
+          # Espanso 2.2.1 crashes on an empty expansion, so print an error if there is no output.
+          cmd: 'out=$(PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH" uv run --quiet --script "$CONFIG/scripts/gh_issue_link.py" 2>&1); printf "%s" "${out:-gh-issue-link error: no output}"'
