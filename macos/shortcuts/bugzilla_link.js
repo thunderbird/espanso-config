@@ -2,8 +2,8 @@
 //
 // Usage: osascript -l JavaScript bugzilla_link.js markdown|html <text>
 //
-// Accepts `https://bugzilla.mozilla.org/show_bug.cgi?id=N` and `bugzil.la/N`,
-// and prints `[Bug N: summary](https://bugzilla.mozilla.org/show_bug.cgi?id=N)`.
+// Accepts `https://bugzilla.mozilla.org/show_bug.cgi?id=N`, `bugzil.la/N`,
+// and a bare bug number N, and prints `[Bug N: summary](https://bugzilla.mozilla.org/show_bug.cgi?id=N)`.
 // In html mode, the script also copies `<a href="url">Bug N: summary</a>` with
 // the Markdown link as plain text, so that Command-V pastes a rich text link.
 // On error, the script prints "Error: <message>" and does not change the
@@ -17,14 +17,16 @@ ObjC.import("AppKit");
 const LONG_URL_RE =
   /^https?:\/\/bugzilla\.mozilla\.org\/show_bug\.cgi\?(?:[^#]*&)?id=(\d+)(?:[&#].*)?$/;
 const SHORT_URL_RE = /^(?:https?:\/\/)?bugzil\.la\/(\d+)\/?(?:[?#].*)?$/;
+// Mozilla has only one Bugzilla, so a number alone is a bug.
+const NUMBER_RE = /^(\d+)$/;
 const API_TIMEOUT_SECONDS = 10;
 
 function parseBugUrl(text) {
   const trimmed = text.trim();
-  const match = LONG_URL_RE.exec(trimmed) || SHORT_URL_RE.exec(trimmed);
+  const match = LONG_URL_RE.exec(trimmed) || SHORT_URL_RE.exec(trimmed) || NUMBER_RE.exec(trimmed);
   if (!match) {
     const shown = text.length > 80 ? `${text.slice(0, 80)}...` : text;
-    throw new Error(`the selection is not a Bugzilla bug URL: "${shown}"`);
+    throw new Error(`the selection is not a Bugzilla bug URL or number: "${shown}"`);
   }
   return match[1];
 }

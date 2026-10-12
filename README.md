@@ -75,9 +75,9 @@ Two Quick Actions change a selected Mozilla Bugzilla bug URL into a link with th
 
 - Bugzilla Link, Control-Command-U: replaces the selection with the Markdown link.
 - Bugzilla HTML Link, Shift-Control-Command-U: copies a rich text link and does not change the selection. Press Command-V to replace the selection with the link.
-- The Quick Actions accept the long URL, `https://bugzilla.mozilla.org/show_bug.cgi?id=2064458`, and the short URL, `bugzil.la/2064458`. The link always uses the long URL.
+- The Quick Actions accept the long URL, `https://bugzilla.mozilla.org/show_bug.cgi?id=2064458`, the short URL, `bugzil.la/2064458`, and the bug number alone, `2064458`. The link always uses the long URL.
 - The Quick Actions get the summary from the Bugzilla REST API without an API key, so they work only for public bugs.
-- If the selection is not a Bugzilla bug URL, or the API call fails, both Quick Actions show the error in a notification. The selection does not change.
+- If the selection is not a Bugzilla bug URL or bug number, or the API call fails, both Quick Actions show the error in a notification. The selection does not change.
 
 Gmail in Firefox does not accept a rich text link from a Quick Action. For this reason, the HTML Quick Actions copy the link, and you paste it.
 
