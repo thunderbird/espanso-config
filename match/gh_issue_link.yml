@@ -1,0 +1,13 @@
+# Copy a GitHub issue URL, type ":ghlink", and the clipboard then holds
+# a Markdown link: [issue title](issue URL).
+# On error, the trigger expands to the error message.
+matches:
+  - trigger: ":ghlink"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          # Espanso runs with a minimal PATH, so add the usual uv and gh locations.
+          # "|| true" makes espanso insert the error text instead of failing silently.
+          cmd: 'PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH" uv run --quiet --script "%CONFIG%/scripts/gh_issue_link.py" || true'
