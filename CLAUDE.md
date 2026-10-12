@@ -59,3 +59,4 @@ Project decisions for Claude Code sessions on macOS and Windows. README.md and W
 - Give each session a different issue, so that the sessions do not change the same files.
 - Test changes to `scripts/*.py` on both systems before you merge.
 - Issue #9 is the Windows test checklist.
+- CONTRIBUTING.md tells a colleague, for example a Windows user, how to work on an issue with Claude Code. Update it when the workflow changes.
