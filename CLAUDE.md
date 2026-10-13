@@ -20,6 +20,7 @@ Project decisions for Claude Code sessions on macOS and Windows. README.md and W
 - The Markdown Quick Actions replace the selection. The HTML Quick Actions copy the link and do not change the selection, and the user presses Command-V. This is the only method that worked in Gmail in Firefox.
 - The Quick Actions do not use espanso, uv, or Python, because a Quick Action does not get the login shell `PATH`. The Zendesk Markdown Quick Action uses only Shortcuts actions.
 - If `/opt/homebrew/bin/gh` or `/usr/local/bin/gh` exists, the GitHub Quick Actions use its token. Other ways to give a token are still open.
+- The Bugzilla Quick Actions accept the long URL, `bugzil.la/N`, a bare number, and `bug N` in any case, because Mozilla has only one Bugzilla. `:bugl` and `scripts/bugzilla_link.py` still accept only URLs. A change there needs a test on Windows too.
 - The README documents import and building by hand, because we do not know whether colleagues can import the files.
 - Windows uses AutoHotkey v2 for the same hotkeys: issue #15 for Zendesk, issue #18 for GitHub, and issue #23 for Bugzilla.
 
@@ -32,6 +33,8 @@ Project decisions for Claude Code sessions on macOS and Windows. README.md and W
 - To find the parameter names of an action, search the dyld shared cache in `/System/Volumes/Preboot/Cryptexes/OS/System/Library/dyld/` for the action name, for example `Run Shell Script (Action Name)`.
 - Firefox ignores rich text that a Quick Action returns. "Copy to Clipboard" copies rich text only as UTF-16 `public.html`, and Gmail in Firefox pastes nothing. For this reason, the HTML Quick Action copies UTF-8 HTML and plain text with `NSPasteboard` in a shell script.
 - A Quick Action with no output does not change the selection.
+- In VS Code, a Markdown Quick Action adds a `]` at the end, because "editor.autoSurround" puts brackets around the selection when the link starts with `[`. Set `"editor.autoSurround": "quotes"` in VS Code.
+- The Services key of a Shift shortcut is in `defaults read pbs NSServicesStatus`, for example `@^$H`. Old entries stay there after you delete a shortcut. The case of the letter did not matter.
 - "Run Shell Script" keeps the newline that `osascript` adds after the result, and the Markdown link then ends with a newline. The scripts use `printf %s "$(osascript ...)"` to remove it.
 - "Run Shell Script" needs Shortcuts > Settings > Advanced > "Allow Running Scripts".
 - `NSURLConnection` in JavaScript for Automation crashes `osascript` (exit code 139). `github_link.js` calls `curl` with `doShellScript`.
