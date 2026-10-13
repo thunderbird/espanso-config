@@ -49,7 +49,7 @@ def test_github_markdown_workflow_outputs_script_result():
         "conditional",
     ]
     script = workflow["WFWorkflowActions"][1]["WFWorkflowActionParameters"]["Script"]
-    assert script.endswith(' markdown "$1"\n')
+    assert script.endswith(' markdown "$1")"\n')
 
 
 def test_github_html_workflow_has_no_output():
@@ -58,8 +58,35 @@ def test_github_html_workflow_has_no_output():
         "detect.text", "runshellscript", "text.match", "conditional", "notification", "conditional", "conditional",
     ]
     script = workflow["WFWorkflowActions"][1]["WFWorkflowActionParameters"]["Script"]
-    assert script.endswith(' html "$1"\n')
+    assert script.endswith(' html "$1")"\n')
 
 
 def test_github_js_has_no_single_quotes():
     assert "'" not in build_shortcuts.GITHUB_JS
+
+
+def test_bugzilla_markdown_workflow_outputs_script_result():
+    workflow = build_shortcuts.build_bugzilla_workflow(as_html=False)
+    assert identifiers(workflow) == [
+        "detect.text", "runshellscript", "text.match", "conditional", "notification", "conditional", "output",
+        "conditional",
+    ]
+    params = workflow["WFWorkflowActions"][4]["WFWorkflowActionParameters"]
+    assert params["WFNotificationActionTitle"] == "No Bugzilla link"
+    script = workflow["WFWorkflowActions"][1]["WFWorkflowActionParameters"]["Script"]
+    assert script.startswith("printf %s \"$(osascript -l JavaScript -e '")
+    assert script.endswith(' markdown "$1")"\n')
+    assert "GH_TOKEN" not in script
+
+
+def test_bugzilla_html_workflow_has_no_output():
+    workflow = build_shortcuts.build_bugzilla_workflow(as_html=True)
+    assert identifiers(workflow) == [
+        "detect.text", "runshellscript", "text.match", "conditional", "notification", "conditional", "conditional",
+    ]
+    script = workflow["WFWorkflowActions"][1]["WFWorkflowActionParameters"]["Script"]
+    assert script.endswith(' html "$1")"\n')
+
+
+def test_bugzilla_js_has_no_single_quotes():
+    assert "'" not in build_shortcuts.BUGZILLA_JS

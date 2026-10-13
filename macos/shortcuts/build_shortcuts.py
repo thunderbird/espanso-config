@@ -3,13 +3,14 @@
 # requires-python = ">=3.10"
 # dependencies = []
 # ///
-"""Build the Zendesk and GitHub Quick Actions for the macOS Shortcuts app.
+"""Build the Zendesk, GitHub, and Bugzilla Quick Actions for the macOS Shortcuts app.
 
 Writes unsigned shortcut files and signs them with `shortcuts sign`, so
 that other people can import them. Each Quick Action gets the selected
 text. The Zendesk Quick Actions find the first number in it. The GitHub
 Quick Actions need a GitHub issue URL and get the title from the GitHub API
-with github_link.js.
+with github_link.js. The Bugzilla Quick Actions need a Bugzilla bug URL and
+get the summary from the Bugzilla REST API with bugzilla_link.js.
 
 The Markdown Quick Actions replace the selection with a Markdown link. The
 HTML Quick Actions copy an HTML link, with the Markdown link as plain text,
@@ -37,6 +38,8 @@ ZENDESK_NAME = "Zendesk Link"
 ZENDESK_HTML_NAME = "Zendesk HTML Link"
 GITHUB_NAME = "GitHub Link"
 GITHUB_HTML_NAME = "GitHub HTML Link"
+BUGZILLA_NAME = "Bugzilla Link"
+BUGZILLA_HTML_NAME = "Bugzilla HTML Link"
 
 # Gets the ticket number as $1 and puts the HTML link and the Markdown link
 # on the clipboard as UTF-8.
@@ -54,6 +57,15 @@ function run(argv) {{
 """
 
 GITHUB_JS = (Path(__file__).parent / "github_link.js").read_text(encoding="utf-8")
+BUGZILLA_JS = (Path(__file__).parent / "bugzilla_link.js").read_text(encoding="utf-8")
+
+
+def osascript_line(js: str, name: str, mode: str) -> str:
+    if "'" in js:
+        raise ValueError(f"{name} must not contain single quotes")
+    # osascript adds a newline after the result, and "Run Shell Script" keeps
+    # it. The command substitution removes it.
+    return f"printf %s \"$(osascript -l JavaScript -e '{js}' {mode} \"$1\")\"\n"
 
 
 def github_script(mode: str) -> str:
@@ -62,15 +74,18 @@ def github_script(mode: str) -> str:
     The script uses the GitHub CLI token if gh is installed, because a token
     gives access to private repositories and a higher API rate limit.
     """
-    if "'" in GITHUB_JS:
-        raise ValueError("github_link.js must not contain single quotes")
     return (
         "for gh in /opt/homebrew/bin/gh /usr/local/bin/gh; do\n"
         '  [ -z "$GH_TOKEN" ] && [ -x "$gh" ] && GH_TOKEN="$("$gh" auth token 2>/dev/null)"\n'
         "done\n"
         "export GH_TOKEN\n"
-        f"osascript -l JavaScript -e '{GITHUB_JS}' {mode} \"$1\"\n"
+        + osascript_line(GITHUB_JS, "github_link.js", mode)
     )
+
+
+def bugzilla_script(mode: str) -> str:
+    """Make the shell script that runs bugzilla_link.js on $1."""
+    return osascript_line(BUGZILLA_JS, "bugzilla_link.js", mode)
 
 
 def new_uuid() -> str:
@@ -188,6 +203,15 @@ def build_zendesk_workflow(as_html: bool) -> dict:
 
 
 def build_github_workflow(as_html: bool) -> dict:
+    return build_script_workflow(github_script, "No GitHub link", as_html)
+
+
+def build_bugzilla_workflow(as_html: bool) -> dict:
+    return build_script_workflow(bugzilla_script, "No Bugzilla link", as_html)
+
+
+def build_script_workflow(make_script, error_title: str, as_html: bool) -> dict:
+    """Make a Quick Action that runs a link script on the selected text."""
     text_uuid = new_uuid()
     script_uuid = new_uuid()
     match_uuid = new_uuid()
@@ -201,7 +225,7 @@ def build_github_workflow(as_html: bool) -> dict:
         action(
             "runshellscript",
             UUID=script_uuid,
-            Script=github_script("html" if as_html else "markdown"),
+            Script=make_script("html" if as_html else "markdown"),
             Shell="/bin/zsh",
             Input=attachment(action_output(text_uuid, "Text")),
             InputMode="as arguments",
@@ -223,7 +247,7 @@ def build_github_workflow(as_html: bool) -> dict:
         ),
         action(
             "notification",
-            WFNotificationActionTitle="No GitHub link",
+            WFNotificationActionTitle=error_title,
             WFNotificationActionBody=token_string(result),
             WFNotificationActionSound=False,
         ),
@@ -287,6 +311,8 @@ def main() -> int:
         (ZENDESK_HTML_NAME, build_zendesk_workflow, True),
         (GITHUB_NAME, build_github_workflow, False),
         (GITHUB_HTML_NAME, build_github_workflow, True),
+        (BUGZILLA_NAME, build_bugzilla_workflow, False),
+        (BUGZILLA_HTML_NAME, build_bugzilla_workflow, True),
     ):
         output = args.output_dir / f"{name}.shortcut"
         write_signed(build(as_html), output)
