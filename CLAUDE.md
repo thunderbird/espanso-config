@@ -16,7 +16,7 @@ Project decisions for Claude Code sessions on macOS and Windows. README.md and W
 
 ## Quick Action decisions
 
-- Keys: Command-Control-Z for Zendesk, Control-Command-G for GitHub, and Control-Command-U for Bugzilla. Add Shift for the HTML version. Windows uses the same letters with Ctrl+Win. Bugzilla does not use B, because Windows uses Shift+Ctrl+Win+B to restart the graphics driver. KeyGap showed Command-Control-Z and Control-Command-U as free in Firefox, Safari, Chrome, Warp, iTerm, Terminal, Notion, and VS Code.
+- Keys: Command-Control-Z for Zendesk, Control-Command-G for GitHub, and Control-Command-H for Bugzilla. Add Shift for the HTML version. Windows uses the same letters with Ctrl+Win. Bugzilla does not use B, because Windows uses Shift+Ctrl+Win+B to restart the graphics driver. It does not use U, because Gmail blocks Shift-Control-Command-U. KeyGap does not know Gmail keys, so test a new HTML key in Gmail in Firefox. If the key does nothing, start the Quick Action from the Services menu to find out if the key or the Quick Action is the problem. KeyGap showed Command-Control-Z and Control-Command-H as free in Firefox, Safari, Chrome, Warp, iTerm, Terminal, Notion, and VS Code.
 - The Markdown Quick Actions replace the selection. The HTML Quick Actions copy the link and do not change the selection, and the user presses Command-V. This is the only method that worked in Gmail in Firefox.
 - The Quick Actions do not use espanso, uv, or Python, because a Quick Action does not get the login shell `PATH`. The Zendesk Markdown Quick Action uses only Shortcuts actions.
 - If `/opt/homebrew/bin/gh` or `/usr/local/bin/gh` exists, the GitHub Quick Actions use its token. Other ways to give a token are still open.
