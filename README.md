@@ -83,6 +83,7 @@ Two Quick Actions copy a link to the page in the front tab of Firefox, Safari, o
 
 - Page Link, Control-Command-L: copies the Markdown link, for example `[Change a selected Bugzilla bug URL into a link with macOS Quick Actions · Issue #22 · thunderbird/espanso-config](https://github.com/thunderbird/espanso-config/issues/22)`.
 - Page HTML Link, Shift-Control-Command-L: copies a rich text link, with the Markdown link as plain text.
+- In Safari, Control-Command-L does nothing, because Safari uses this key. Use Shift-Control-Command-L. It copies both links: apps that accept rich text paste the HTML link, and apps that accept only plain text, for example VS Code, paste the Markdown link. Page Link also works from the Services menu in Safari.
 - Firefox gives only the window title, so the Quick Actions find the URL of the most recent visit with this title in the Firefox history (`places.sqlite`) of the open profiles. Private windows do not work, because they have no history. If two pages have the same title, the link goes to the one that you visited last.
 - If the front app is not one of these browsers, or the page has no URL, both Quick Actions show the error in a notification.
 
