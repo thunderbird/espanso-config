@@ -54,9 +54,9 @@ The script gets the summary from the Bugzilla REST API without an API key, so it
 
 In Zendesk, `:ghl`, `:zdl`, and `:bugl` expand to HTML links instead of Markdown. Espanso finds Zendesk by the window title and the program, so the browser tab title must contain "Zendesk", and the browser must be Firefox, Chrome, Edge, or Safari. Other apps, for example VS Code, always get Markdown, also if their window title contains "Zendesk". To add another HTML app, add a configuration file like `config/zendesk.yml` with a different `filter_title`.
 
-## macOS Quick Actions: selected text to a link
+## macOS Quick Actions: selected text or web page to a link
 
-Six Quick Actions for the macOS Shortcuts app change selected text into a link. A Quick Action is a shortcut that runs on the selected text in any app. The Quick Actions do not use espanso, uv, or Python.
+Six Quick Actions for the macOS Shortcuts app change selected text into a link. Two more Quick Actions copy a link to the current web page. A Quick Action is a shortcut that runs from the Services menu or a keyboard shortcut in any app. The Quick Actions do not use espanso, uv, or Python.
 
 Two Quick Actions change a selected ticket number into a Zendesk ticket link:
 
@@ -79,14 +79,22 @@ Two Quick Actions change a selected Mozilla Bugzilla bug URL into a link with th
 - The Quick Actions get the summary from the Bugzilla REST API without an API key, so they work only for public bugs.
 - If the selection is not a Bugzilla bug URL or bug number, or the API call fails, both Quick Actions show the error in a notification. The selection does not change.
 
+Two Quick Actions copy a link to the page in the front tab of Firefox, Safari, or Chrome, with the page title as link text. They need no selection:
+
+- Page Link, Control-Command-L: copies the Markdown link, for example `[Change a selected Bugzilla bug URL into a link with macOS Quick Actions · Issue #22 · thunderbird/espanso-config](https://github.com/thunderbird/espanso-config/issues/22)`.
+- Page HTML Link, Shift-Control-Command-L: copies a rich text link, with the Markdown link as plain text.
+- In Firefox, the Quick Actions press Command-L, Command-C, and Escape to get the URL, and remove the browser name, for example " — Mozilla Firefox", from the window title. Release the keys of the keyboard shortcut quickly, because the Quick Action waits for them for 3 seconds. The address bar keeps the focus after the Quick Action.
+- If the front app is not one of these browsers, or the page has no URL, both Quick Actions show the error in a notification.
+
 Gmail in Firefox does not accept a rich text link from a Quick Action. For this reason, the HTML Quick Actions copy the link, and you paste it.
 
 ### Install by import
 
 1. Download the `.shortcut` files that you want from `macos/shortcuts/`.
 2. Double-click each file and select "Add Shortcut".
-3. In Shortcuts, open Settings > Advanced and turn on "Allow Running Scripts". The HTML Quick Actions, the GitHub Quick Actions, and the Bugzilla Quick Actions need it.
-4. Add the keyboard shortcuts. Open System Settings > Keyboard > Keyboard Shortcuts > Services. In the Text group, double-click to the right of the Quick Action name and press its keys from the lists above.
+3. In Shortcuts, open Settings > Advanced and turn on "Allow Running Scripts". The HTML Quick Actions and the GitHub, Bugzilla, and page Quick Actions need it.
+4. Add the keyboard shortcuts. Open System Settings > Keyboard > Keyboard Shortcuts > Services. Double-click to the right of the Quick Action name and press its keys from the lists above. The page Quick Actions are in the General group, and the other Quick Actions are in the Text group.
+5. For the page Quick Actions in Firefox, open System Settings > Privacy & Security > Accessibility and turn on Shortcuts. The first time that you use them in Safari or Chrome, macOS asks if Shortcuts can control the browser. Select "Allow".
 
 If a shortcut with the same name exists, Shortcuts adds the new one with a number, for example "Zendesk HTML Link 1". Delete the old shortcut before you import a new version, and add the keyboard shortcut again.
 
@@ -141,9 +149,20 @@ To make a Bugzilla Quick Action by hand, save `macos/shortcuts/bugzilla_link.js`
 printf %s "$(osascript -l JavaScript ~/bugzilla_link.js markdown "$1")"
 ```
 
+To make a page Quick Action by hand, save `macos/shortcuts/page_link.js` in your home folder. Make a shortcut with "Use as Quick Action" and "Services Menu" on, and set it to receive no input. Add these actions:
+
+1. "Run Shell Script" with the shell zsh and this script. For Page HTML Link, change `markdown` to `html`.
+
+   ```sh
+   printf %s "$(osascript -l JavaScript ~/page_link.js markdown)"
+   ```
+
+2. "Match Text" with the pattern `^Error:` in Shell Script Result.
+3. "If" with Matches and "has any value". After "If", add "Show Notification" with Shell Script Result.
+
 ### Change the Quick Actions
 
-`macos/shortcuts/build_shortcuts.py` makes the `.shortcut` files and signs them with `shortcuts sign`. It puts `macos/shortcuts/github_link.js` in the GitHub Quick Actions and `macos/shortcuts/bugzilla_link.js` in the Bugzilla Quick Actions. After you change one of the three files, run the build script on a Mac:
+`macos/shortcuts/build_shortcuts.py` makes the `.shortcut` files and signs them with `shortcuts sign`. It puts `macos/shortcuts/github_link.js` in the GitHub Quick Actions, `macos/shortcuts/bugzilla_link.js` in the Bugzilla Quick Actions, and `macos/shortcuts/page_link.js` in the page Quick Actions. After you change one of these files, run the build script on a Mac:
 
 ```sh
 uv run macos/shortcuts/build_shortcuts.py
