@@ -1,6 +1,6 @@
 # Work on an issue with Claude Code
 
-This page tells a colleague how to work on an issue in this repository with [Claude Code](https://claude.com/claude-code). The example is a Windows issue, for example #15 or #18. The steps on macOS are almost the same.
+This page tells a colleague how to work on an issue in this repository with [Claude Code](https://claude.com/claude-code). The example is the Windows issue #29. The steps on macOS are almost the same.
 
 When Claude Code starts, it reads [CLAUDE.md](CLAUDE.md). CLAUDE.md records the project decisions and the facts that caused bugs, so you do not have to explain them.
 
@@ -44,7 +44,7 @@ gh auth login
    claude
    ```
 
-3. Give Claude Code the issue number, for example `implement #15`. Claude Code reads the issue, makes a branch, and writes the code.
+3. Give Claude Code the issue number, for example `implement #29`. Claude Code reads the issue, makes a branch, and writes the code.
 4. When Claude Code asks you, test the result yourself. Claude Code cannot press hotkeys or see other windows. You must try the hotkey in a browser, Slack, and a text editor. Tell it exactly what happened, or paste a screenshot.
 5. Ask Claude Code to open a pull request. Give the pull request to the repository owner for review. If the owner agrees, merge it with a merge commit.
 
