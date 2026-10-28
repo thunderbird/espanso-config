@@ -127,7 +127,9 @@ def action(identifier: str, **parameters) -> dict:
 
 
 def build_zendesk_workflow(as_html: bool) -> dict:
-    return build_script_workflow(zendesk_script, "No Zendesk ticket number", as_html)
+    # The old Zendesk Quick Actions read Shortcut Input as text, and this worked
+    # in Gmail. "Get Text from Input" gave text without the number there.
+    return build_script_workflow(zendesk_script, "No Zendesk ticket number", as_html, text_action=True)
 
 
 def build_github_workflow(as_html: bool) -> dict:
@@ -183,8 +185,12 @@ def build_page_workflow(as_html: bool) -> dict:
     return workflow(actions, with_input=False)
 
 
-def build_script_workflow(make_script, error_title: str, as_html: bool) -> dict:
-    """Make a Quick Action that runs a link script on the selected text."""
+def build_script_workflow(make_script, error_title: str, as_html: bool, text_action: bool = False) -> dict:
+    """Make a Quick Action that runs a link script on the selected text.
+
+    With text_action, a "Text" action makes the text from Shortcut Input,
+    in place of "Get Text from Input".
+    """
     text_uuid = new_uuid()
     script_uuid = new_uuid()
     match_uuid = new_uuid()
@@ -194,7 +200,9 @@ def build_script_workflow(make_script, error_title: str, as_html: bool) -> dict:
 
     actions = [
         # Make plain text from a rich text selection or a file.
-        action("detect.text", UUID=text_uuid, WFInput=attachment(shortcut_input())),
+        action("gettext", UUID=text_uuid, WFTextActionText=token_string(shortcut_input()))
+        if text_action
+        else action("detect.text", UUID=text_uuid, WFInput=attachment(shortcut_input())),
         action(
             "runshellscript",
             UUID=script_uuid,

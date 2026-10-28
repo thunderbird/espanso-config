@@ -21,7 +21,7 @@ def test_token_string_positions():
 def test_zendesk_markdown_workflow_outputs_script_result():
     workflow = build_shortcuts.build_zendesk_workflow(as_html=False)
     assert identifiers(workflow) == [
-        "detect.text", "runshellscript", "text.match", "conditional", "notification", "conditional", "output",
+        "gettext", "runshellscript", "text.match", "conditional", "notification", "conditional", "output",
         "conditional",
     ]
     params = workflow["WFWorkflowActions"][4]["WFWorkflowActionParameters"]
@@ -34,7 +34,7 @@ def test_zendesk_markdown_workflow_outputs_script_result():
 def test_zendesk_html_workflow_has_no_output():
     workflow = build_shortcuts.build_zendesk_workflow(as_html=True)
     assert identifiers(workflow) == [
-        "detect.text", "runshellscript", "text.match", "conditional", "notification", "conditional", "conditional",
+        "gettext", "runshellscript", "text.match", "conditional", "notification", "conditional", "conditional",
     ]
     script = workflow["WFWorkflowActions"][1]["WFWorkflowActionParameters"]["Script"]
     assert script.endswith(' html "$1")"\n')

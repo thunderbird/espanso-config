@@ -54,4 +54,4 @@ def test_text_with_more_numbers_keeps_them():
 
 
 def test_no_number():
-    assert markdown("blah") == "Error: Select text that contains a ticket number."
+    assert markdown("blah") == 'Error: Select text that contains a ticket number. The selection was: "blah"'

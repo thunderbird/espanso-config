@@ -26,7 +26,8 @@ const SEPARATOR_RE = /^[\s:\-\u2013\u2014|]+/;
 function parseTicket(text) {
   const match = NUMBER_RE.exec(text);
   if (!match) {
-    throw new Error("Select text that contains a ticket number.");
+    const shown = text.length > 80 ? `${text.slice(0, 80)}...` : text;
+    throw new Error(`Select text that contains a ticket number. The selection was: "${shown}"`);
   }
   const number = match[0];
   let rest = text.slice(match.index + number.length);
