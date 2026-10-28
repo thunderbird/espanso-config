@@ -3,14 +3,16 @@
 # requires-python = ">=3.10"
 # dependencies = []
 # ///
-"""Build the Zendesk, GitHub, and Bugzilla Quick Actions for the macOS Shortcuts app.
+"""Build the Zendesk, GitHub, Bugzilla, and page Quick Actions for the macOS Shortcuts app.
 
 Writes unsigned shortcut files and signs them with `shortcuts sign`, so
 that other people can import them. Each Quick Action gets the selected
 text. The Zendesk Quick Actions find the first number in it. The GitHub
 Quick Actions need a GitHub issue URL and get the title from the GitHub API
 with github_link.js. The Bugzilla Quick Actions need a Bugzilla bug URL and
-get the summary from the Bugzilla REST API with bugzilla_link.js.
+get the summary from the Bugzilla REST API with bugzilla_link.js. The page
+Quick Actions get no input. They copy a link to the page in the front browser
+tab, with the page title as link text, with page_link.js.
 
 The Markdown Quick Actions replace the selection with a Markdown link. The
 HTML Quick Actions copy an HTML link, with the Markdown link as plain text,
@@ -40,6 +42,8 @@ GITHUB_NAME = "GitHub Link"
 GITHUB_HTML_NAME = "GitHub HTML Link"
 BUGZILLA_NAME = "Bugzilla Link"
 BUGZILLA_HTML_NAME = "Bugzilla HTML Link"
+PAGE_NAME = "Page Link"
+PAGE_HTML_NAME = "Page HTML Link"
 
 # Gets the ticket number as $1 and puts the HTML link and the Markdown link
 # on the clipboard as UTF-8.
@@ -58,6 +62,7 @@ function run(argv) {{
 
 GITHUB_JS = (Path(__file__).parent / "github_link.js").read_text(encoding="utf-8")
 BUGZILLA_JS = (Path(__file__).parent / "bugzilla_link.js").read_text(encoding="utf-8")
+PAGE_JS = (Path(__file__).parent / "page_link.js").read_text(encoding="utf-8")
 
 
 def osascript_line(js: str, name: str, mode: str) -> str:
@@ -210,6 +215,51 @@ def build_bugzilla_workflow(as_html: bool) -> dict:
     return build_script_workflow(bugzilla_script, "No Bugzilla link", as_html)
 
 
+def build_page_workflow(as_html: bool) -> dict:
+    """Make a Quick Action without input that runs page_link.js.
+
+    page_link.js copies the link in both modes. It runs in a "Run JavaScript
+    for Mac Automation" action, so the file can contain single quotes.
+    """
+    script_uuid = new_uuid()
+    match_uuid = new_uuid()
+    group = new_uuid()
+    result = action_output(script_uuid, "Result")
+    error = action_output(match_uuid, "Matches")
+    mode = "html" if as_html else "markdown"
+
+    actions = [
+        action(
+            "runjavascriptforautomation",
+            UUID=script_uuid,
+            Script=f'var PAGE_LINK_MODE = "{mode}";\n{PAGE_JS}',
+            Input=attachment(shortcut_input()),
+        ),
+        action(
+            "text.match",
+            UUID=match_uuid,
+            WFMatchTextPattern="^Error:",
+            text=token_string(result),
+        ),
+        # 100 is "has any value".
+        action(
+            "conditional",
+            GroupingIdentifier=group,
+            WFControlFlowMode=0,
+            WFCondition=100,
+            WFInput={"Type": "Variable", "Variable": attachment(error)},
+        ),
+        action(
+            "notification",
+            WFNotificationActionTitle="No page link",
+            WFNotificationActionBody=token_string(result),
+            WFNotificationActionSound=False,
+        ),
+        action("conditional", GroupingIdentifier=group, WFControlFlowMode=2),
+    ]
+    return workflow(actions, with_input=False)
+
+
 def build_script_workflow(make_script, error_title: str, as_html: bool) -> dict:
     """Make a Quick Action that runs a link script on the selected text."""
     text_uuid = new_uuid()
@@ -267,20 +317,23 @@ def build_script_workflow(make_script, error_title: str, as_html: bool) -> dict:
     return workflow(actions)
 
 
-def workflow(actions: list[dict]) -> dict:
+def workflow(actions: list[dict], with_input: bool = True) -> dict:
+    # A Quick Action without input classes needs no selection, so its
+    # keyboard shortcut works in every app.
+    input_classes = ["WFStringContentItem", "WFRichTextContentItem"] if with_input else []
     return {
         "WFWorkflowActions": actions,
         "WFWorkflowClientVersion": "2607.0.3",
         "WFWorkflowMinimumClientVersion": 900,
         "WFWorkflowMinimumClientVersionString": "900",
         "WFWorkflowHasOutputFallback": False,
-        "WFWorkflowHasShortcutInputVariables": True,
+        "WFWorkflowHasShortcutInputVariables": with_input,
         "WFWorkflowIcon": {
             "WFWorkflowIconStartColor": 4282601983,
             "WFWorkflowIconGlyphNumber": 59511,
         },
         "WFWorkflowImportQuestions": [],
-        "WFWorkflowInputContentItemClasses": ["WFStringContentItem", "WFRichTextContentItem"],
+        "WFWorkflowInputContentItemClasses": input_classes,
         "WFWorkflowOutputContentItemClasses": [],
         "WFWorkflowTypes": ["QuickActions"],
         "WFQuickActionSurfaces": ["Services"],
@@ -313,6 +366,8 @@ def main() -> int:
         (GITHUB_HTML_NAME, build_github_workflow, True),
         (BUGZILLA_NAME, build_bugzilla_workflow, False),
         (BUGZILLA_HTML_NAME, build_bugzilla_workflow, True),
+        (PAGE_NAME, build_page_workflow, False),
+        (PAGE_HTML_NAME, build_page_workflow, True),
     ):
         output = args.output_dir / f"{name}.shortcut"
         write_signed(build(as_html), output)
