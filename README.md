@@ -93,7 +93,7 @@ Gmail in Firefox does not accept a rich text link from a Quick Action. For this 
 1. Download the `.shortcut` files that you want from `macos/shortcuts/`.
 2. Double-click each file and select "Add Shortcut".
 3. In Shortcuts, open Settings > Advanced and turn on "Allow Running Scripts". The HTML Quick Actions and the GitHub, Bugzilla, and page Quick Actions need it.
-4. Add the keyboard shortcuts. Open System Settings > Keyboard > Keyboard Shortcuts > Services. Double-click to the right of the Quick Action name and press its keys from the lists above. The page Quick Actions are in the General group, and the other Quick Actions are in the Text group.
+4. Add the keyboard shortcuts. Open System Settings > Keyboard > Keyboard Shortcuts > Services. Double-click to the right of the Quick Action name and press its keys from the lists above. The page Quick Actions are in the Shortcuts group, and the other Quick Actions are in the Text group.
 5. For the page Quick Actions in Firefox, open System Settings > Privacy & Security > Accessibility and turn on Shortcuts. The first time that you use them in Safari or Chrome, macOS asks if Shortcuts can control the browser. Select "Allow".
 
 If a shortcut with the same name exists, Shortcuts adds the new one with a number, for example "Zendesk HTML Link 1". Delete the old shortcut before you import a new version, and add the keyboard shortcut again.
