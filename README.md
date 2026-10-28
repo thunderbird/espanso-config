@@ -83,7 +83,7 @@ Two Quick Actions copy a link to the page in the front tab of Firefox, Safari, o
 
 - Page Link, Control-Command-L: copies the Markdown link, for example `[Change a selected Bugzilla bug URL into a link with macOS Quick Actions · Issue #22 · thunderbird/espanso-config](https://github.com/thunderbird/espanso-config/issues/22)`.
 - Page HTML Link, Shift-Control-Command-L: copies a rich text link, with the Markdown link as plain text.
-- In Firefox, the Quick Actions press Command-L, Command-C, and Escape to get the URL, and remove the browser name, for example " — Mozilla Firefox", from the window title. Release the keys of the keyboard shortcut quickly, because the Quick Action waits for them for 3 seconds. The address bar keeps the focus after the Quick Action.
+- Firefox gives only the window title, so the Quick Actions find the URL of the most recent visit with this title in the Firefox history (`places.sqlite`) of the open profiles. Private windows do not work, because they have no history. If two pages have the same title, the link goes to the one that you visited last.
 - If the front app is not one of these browsers, or the page has no URL, both Quick Actions show the error in a notification.
 
 Gmail in Firefox does not accept a rich text link from a Quick Action. For this reason, the HTML Quick Actions copy the link, and you paste it.
@@ -94,7 +94,7 @@ Gmail in Firefox does not accept a rich text link from a Quick Action. For this 
 2. Double-click each file and select "Add Shortcut".
 3. In Shortcuts, open Settings > Advanced and turn on "Allow Running Scripts". The HTML Quick Actions and the GitHub, Bugzilla, and page Quick Actions need it.
 4. Add the keyboard shortcuts. Open System Settings > Keyboard > Keyboard Shortcuts > Services. Double-click to the right of the Quick Action name and press its keys from the lists above. The page Quick Actions are in the Shortcuts group, and the other Quick Actions are in the Text group.
-5. For the page Quick Actions in Firefox, open System Settings > Privacy & Security > Accessibility and turn on Shortcuts. The first time that you use them in Safari or Chrome, macOS asks if Shortcuts can control the browser. Select "Allow".
+5. The first time that you use a page Quick Action in a browser, macOS asks if Shortcuts can control the browser. Select "Allow".
 
 If a shortcut with the same name exists, Shortcuts adds the new one with a number, for example "Zendesk HTML Link 1". Delete the old shortcut before you import a new version, and add the keyboard shortcut again.
 
@@ -151,7 +151,7 @@ printf %s "$(osascript -l JavaScript ~/bugzilla_link.js markdown "$1")"
 
 To make a page Quick Action by hand, make a shortcut with "Use as Quick Action" and "Services Menu" on, and set it to receive no input. Add these actions:
 
-1. "Run JavaScript for Mac Automation". Replace its script with `var PAGE_LINK_MODE = "markdown";` on the first line and the contents of `macos/shortcuts/page_link.js` after it. For Page HTML Link, change `markdown` to `html`. Do not use "Run Shell Script", because macOS then asks for Accessibility permission for `osascript` and not for Shortcuts.
+1. "Run JavaScript for Mac Automation". Replace its script with `var PAGE_LINK_MODE = "markdown";` on the first line and the contents of `macos/shortcuts/page_link.js` after it. For Page HTML Link, change `markdown` to `html`.
 2. "Match Text" with the pattern `^Error:` in Result.
 3. "If" with Matches and "has any value". After "If", add "Show Notification" with Result.
 

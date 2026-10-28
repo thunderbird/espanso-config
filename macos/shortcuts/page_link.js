@@ -5,19 +5,18 @@
 // Gets the title and URL of the front tab of the front app, or of the
 // browser that you give, for example "Safari", "Google Chrome", or
 // "Firefox". Safari and Chrome give the title and URL with AppleScript.
-// Firefox gives only the window title, so the script presses Command-L and
-// Command-C to copy the URL, and Escape to close the address bar. This needs
-// Accessibility permission.
+// Firefox gives only the window title, so the script finds the URL of the
+// most recent visit with this title in the Firefox history. The script needs
+// no Accessibility permission.
 //
 // In markdown mode, the script copies `[title](url)`. In html mode, it copies
 // `<a href="url">title</a>` with the Markdown link as plain text, so that
 // Command-V pastes a rich text link. The script prints the Markdown link. On
 // error, the script prints "Error: <message>" and does not change the
-// clipboard, except that the Firefox URL copy replaces it.
+// clipboard.
 //
 // build_shortcuts.py puts this file in a "Run JavaScript for Mac Automation"
-// action, so that macOS asks for Accessibility permission for Shortcuts and
-// not for osascript. It adds `var PAGE_LINK_MODE = "markdown";` or "html"
+// action. It adds `var PAGE_LINK_MODE = "markdown";` or "html"
 // before the file, because the action gives no arguments.
 
 ObjC.import("AppKit");
@@ -35,15 +34,14 @@ const BROWSER_NAMES = {
   chrome: "com.google.Chrome",
   firefox: "org.mozilla.firefox",
 };
-// Firefox adds the browser name to the window title, for example
-// "Title — Mozilla Firefox" or "Title — Firefox Nightly Private Browsing".
+// Firefox adds the browser name or the profile name to the window title,
+// for example "Title — Mozilla Firefox" or "Title — Work".
 const FIREFOX_SUFFIX_RE =
   /\s+[—–-]\s+(?:Mozilla Firefox|Firefox(?: Developer Edition| Nightly)?)(?: Private Browsing)?$/;
-const MODIFIER_WAIT_SECONDS = 3;
+const PROFILE_SUFFIX_RE = /\s+—\s+[^—]*$/;
 
 function frontBundleId() {
-  const process = Application("System Events").processes.whose({ frontmost: true })[0];
-  return process.bundleIdentifier();
+  return ObjC.unwrap($.NSWorkspace.sharedWorkspace.frontmostApplication.bundleIdentifier);
 }
 
 function chromeTab(bundleId) {
@@ -64,47 +62,74 @@ function safariTab(bundleId) {
   return { title: tab.name(), url: tab.url() };
 }
 
-// The Quick Action starts while the person still holds Control-Command. A
-// keystroke then gets these keys too, so wait until they are released.
-function waitForModifierRelease() {
-  const mask =
-    $.NSEventModifierFlagCommand |
-    $.NSEventModifierFlagControl |
-    $.NSEventModifierFlagShift |
-    $.NSEventModifierFlagOption;
-  const end = Date.now() + MODIFIER_WAIT_SECONDS * 1000;
-  while ($.NSEvent.modifierFlags & mask) {
-    if (Date.now() > end) {
-      throw new Error("release the keys of the keyboard shortcut");
-    }
-    delay(0.05);
-  }
+function shellQuote(text) {
+  return `'${text.replace(/'/g, `'\\''`)}'`;
 }
 
+function sqlQuote(text) {
+  return `'${text.replace(/'/g, "''")}'`;
+}
+
+// Finds the most recent URL with one of the titles in the history of the
+// open Firefox profiles. Firefox locks places.sqlite, so the script copies it
+// with its write-ahead log, which has the recent visits. Only an open
+// profile has a write-ahead log that is not empty.
+function firefoxHistoryUrl(titles) {
+  const sql =
+    "SELECT last_visit_date, url, title FROM moz_places WHERE title IN (" +
+    titles.map(sqlQuote).join(", ") +
+    ") ORDER BY last_visit_date DESC LIMIT 1";
+  const command = [
+    'dir="$(mktemp -d)" || exit 1',
+    'sep="$(printf "\\037")"',
+    'for p in "$HOME/Library/Application Support/Firefox/Profiles/"*/; do',
+    '  [ -s "$p/places.sqlite-wal" ] || continue',
+    '  cp "$p/places.sqlite" "$dir/p.sqlite" && cp "$p/places.sqlite-wal" "$dir/p.sqlite-wal" &&',
+    `  /usr/bin/sqlite3 -readonly -separator "$sep" "$dir/p.sqlite" ${shellQuote(sql)}`,
+    '  rm -f "$dir"/p.sqlite*',
+    "done",
+    'rm -rf "$dir"',
+  ].join("\n");
+
+  const app = Application.currentApplication();
+  app.includeStandardAdditions = true;
+  let output;
+  try {
+    output = app.doShellScript(command);
+  } catch (e) {
+    throw new Error(`cannot read the Firefox history: ${e.message}`);
+  }
+  let best = null;
+  output.split(/[\r\n]+/).forEach((line) => {
+    const [visit, url, title] = line.split("\x1f");
+    if (url && (!best || Number(visit) > Number(best.visit))) {
+      best = { visit, url, title };
+    }
+  });
+  return best;
+}
+
+// Firefox gives the window title with AppleScript, but not the URL, so the
+// script finds the URL in the Firefox history. A private window has no
+// history.
 function firefoxTab(bundleId) {
-  const events = Application("System Events");
-  const process = events.processes.whose({ bundleIdentifier: bundleId })[0];
-  if (!process.windows.length) {
+  const app = Application(bundleId);
+  if (!app.windows.length) {
     throw new Error("Firefox has no open window");
   }
-  const title = process.windows[0].name().replace(FIREFOX_SUFFIX_RE, "");
-
-  waitForModifierRelease();
-  Application(bundleId).activate();
-  const pasteboard = $.NSPasteboard.generalPasteboard;
-  pasteboard.clearContents;
-  events.keystroke("l", { using: "command down" });
-  delay(0.2);
-  events.keystroke("c", { using: "command down" });
-  let url = "";
-  for (let i = 0; i < 20 && !url; i++) {
-    delay(0.05);
-    url = ObjC.unwrap(pasteboard.stringForType($("public.utf8-plain-text"))) || "";
+  const windowTitle = app.windows[0].name();
+  const titles = [windowTitle];
+  [FIREFOX_SUFFIX_RE, PROFILE_SUFFIX_RE].forEach((re) => {
+    const title = windowTitle.replace(re, "");
+    if (title && !titles.includes(title)) {
+      titles.push(title);
+    }
+  });
+  const found = firefoxHistoryUrl(titles);
+  if (!found) {
+    throw new Error(`the Firefox history has no page with the title "${titles[titles.length - 1]}"`);
   }
-  // Escape closes the address bar suggestions and then shows the URL again.
-  events.keyCode(53);
-  events.keyCode(53);
-  return { title, url: url.trim() };
+  return { title: found.title, url: found.url };
 }
 
 function pageTab(browser) {

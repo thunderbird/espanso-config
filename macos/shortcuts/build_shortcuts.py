@@ -219,9 +219,7 @@ def build_page_workflow(as_html: bool) -> dict:
     """Make a Quick Action without input that runs page_link.js.
 
     page_link.js copies the link in both modes. It runs in a "Run JavaScript
-    for Mac Automation" action and not with osascript, because Firefox needs
-    keystrokes, and macOS gives Accessibility permission to Shortcuts but not
-    to osascript.
+    for Mac Automation" action, so the file can contain single quotes.
     """
     script_uuid = new_uuid()
     match_uuid = new_uuid()
