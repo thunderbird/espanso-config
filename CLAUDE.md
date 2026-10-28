@@ -35,6 +35,7 @@ Project decisions for Claude Code sessions on macOS and Windows. README.md and W
 - To find the parameter names of an action, search the dyld shared cache in `/System/Volumes/Preboot/Cryptexes/OS/System/Library/dyld/` for the action name, for example `Run Shell Script (Action Name)`.
 - Firefox ignores rich text that a Quick Action returns. "Copy to Clipboard" copies rich text only as UTF-16 `public.html`, and Gmail in Firefox pastes nothing. For this reason, the HTML Quick Action copies UTF-8 HTML and plain text with `NSPasteboard` in a shell script.
 - A Quick Action with no output does not change the selection.
+- Google Docs gives a Quick Action an empty selection, also from the Services menu. Gmail gives the selected text.
 - In VS Code, a Markdown Quick Action adds a `]` at the end, because "editor.autoSurround" puts brackets around the selection when the link starts with `[`. Set `"editor.autoSurround": "quotes"` in VS Code.
 - The Services key of a Shift shortcut is in `defaults read pbs NSServicesStatus`, for example `@^$H`. Old entries stay there after you delete a shortcut. The case of the letter did not matter.
 - "Run Shell Script" keeps the newline that `osascript` adds after the result, and the Markdown link then ends with a newline. The scripts use `printf %s "$(osascript ...)"` to remove it.

@@ -90,6 +90,8 @@ Two Quick Actions copy a link to the page in the front tab of Firefox, Safari, o
 
 Gmail in Firefox does not accept a rich text link from a Quick Action. For this reason, the HTML Quick Actions copy the link, and you paste it.
 
+The Quick Actions that use a selection do not work in Google Docs. Google Docs gives them an empty selection, so they show an error.
+
 ### Install by import
 
 1. Download the `.shortcut` files that you want from `macos/shortcuts/`.
