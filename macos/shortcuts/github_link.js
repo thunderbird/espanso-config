@@ -8,6 +8,8 @@
 // prints "Error: <message>" and does not change the clipboard. If the
 // GH_TOKEN environment variable is set, the script sends it to the GitHub API.
 //
+// If the selection is empty, the script uses the plain text on the clipboard.
+//
 // build_shortcuts.py puts this file in single quotes in a shell script, so
 // do not use single quotes here.
 
@@ -124,12 +126,28 @@ function copyHtml(links) {
   pasteboard.setStringForType($(links.markdown), $("public.utf8-plain-text"));
 }
 
+function copyMarkdown(links) {
+  const pasteboard = $.NSPasteboard.generalPasteboard;
+  pasteboard.clearContents;
+  pasteboard.setStringForType($(links.markdown), $("public.utf8-plain-text"));
+}
+
+function readClipboard() {
+  const text = $.NSPasteboard.generalPasteboard.stringForType($("public.utf8-plain-text"));
+  return text.isNil() ? "" : text.js;
+}
+
+// Google Docs gives an empty selection. Then the script uses the copied
+// text, and markdown mode also copies the link, so that Command-V pastes it.
 function run(argv) {
-  const [mode, text = ""] = argv;
+  const [mode, selection = ""] = argv;
   try {
-    const links = makeLinks(text);
+    const fromClipboard = !selection.trim();
+    const links = makeLinks(fromClipboard ? readClipboard() : selection);
     if (mode === "html") {
       copyHtml(links);
+    } else if (fromClipboard) {
+      copyMarkdown(links);
     }
     return links.markdown;
   } catch (e) {
