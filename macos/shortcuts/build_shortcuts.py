@@ -65,12 +65,12 @@ BUGZILLA_JS = (Path(__file__).parent / "bugzilla_link.js").read_text(encoding="u
 PAGE_JS = (Path(__file__).parent / "page_link.js").read_text(encoding="utf-8")
 
 
-def osascript_line(js: str, name: str, mode: str, argument: str = ' "$1"') -> str:
+def osascript_line(js: str, name: str, mode: str) -> str:
     if "'" in js:
         raise ValueError(f"{name} must not contain single quotes")
     # osascript adds a newline after the result, and "Run Shell Script" keeps
     # it. The command substitution removes it.
-    return f"printf %s \"$(osascript -l JavaScript -e '{js}' {mode}{argument})\"\n"
+    return f"printf %s \"$(osascript -l JavaScript -e '{js}' {mode} \"$1\")\"\n"
 
 
 def github_script(mode: str) -> str:
@@ -91,11 +91,6 @@ def github_script(mode: str) -> str:
 def bugzilla_script(mode: str) -> str:
     """Make the shell script that runs bugzilla_link.js on $1."""
     return osascript_line(BUGZILLA_JS, "bugzilla_link.js", mode)
-
-
-def page_script(mode: str) -> str:
-    """Make the shell script that runs page_link.js on the front app."""
-    return osascript_line(PAGE_JS, "page_link.js", mode, argument="")
 
 
 def new_uuid() -> str:
@@ -221,17 +216,54 @@ def build_bugzilla_workflow(as_html: bool) -> dict:
 
 
 def build_page_workflow(as_html: bool) -> dict:
-    return build_script_workflow(page_script, "No page link", as_html, with_input=False)
+    """Make a Quick Action without input that runs page_link.js.
 
-
-def build_script_workflow(
-    make_script, error_title: str, as_html: bool, with_input: bool = True
-) -> dict:
-    """Make a Quick Action that runs a link script on the selected text.
-
-    Without input, the Quick Action needs no selection, and the script
-    copies the link in both modes.
+    page_link.js copies the link in both modes. It runs in a "Run JavaScript
+    for Mac Automation" action and not with osascript, because Firefox needs
+    keystrokes, and macOS gives Accessibility permission to Shortcuts but not
+    to osascript.
     """
+    script_uuid = new_uuid()
+    match_uuid = new_uuid()
+    group = new_uuid()
+    result = action_output(script_uuid, "Result")
+    error = action_output(match_uuid, "Matches")
+    mode = "html" if as_html else "markdown"
+
+    actions = [
+        action(
+            "runjavascriptforautomation",
+            UUID=script_uuid,
+            Script=f'var PAGE_LINK_MODE = "{mode}";\n{PAGE_JS}',
+            Input=attachment(shortcut_input()),
+        ),
+        action(
+            "text.match",
+            UUID=match_uuid,
+            WFMatchTextPattern="^Error:",
+            text=token_string(result),
+        ),
+        # 100 is "has any value".
+        action(
+            "conditional",
+            GroupingIdentifier=group,
+            WFControlFlowMode=0,
+            WFCondition=100,
+            WFInput={"Type": "Variable", "Variable": attachment(error)},
+        ),
+        action(
+            "notification",
+            WFNotificationActionTitle="No page link",
+            WFNotificationActionBody=token_string(result),
+            WFNotificationActionSound=False,
+        ),
+        action("conditional", GroupingIdentifier=group, WFControlFlowMode=2),
+    ]
+    return workflow(actions, with_input=False)
+
+
+def build_script_workflow(make_script, error_title: str, as_html: bool) -> dict:
+    """Make a Quick Action that runs a link script on the selected text."""
     text_uuid = new_uuid()
     script_uuid = new_uuid()
     match_uuid = new_uuid()
@@ -239,25 +271,17 @@ def build_script_workflow(
     result = action_output(script_uuid, "Shell Script Result")
     error = action_output(match_uuid, "Matches")
 
-    script_parameters = {}
-    actions = []
-    if with_input:
+    actions = [
         # Make plain text from a rich text selection or a file.
-        actions.append(
-            action("detect.text", UUID=text_uuid, WFInput=attachment(shortcut_input()))
-        )
-        script_parameters = {
-            "Input": attachment(action_output(text_uuid, "Text")),
-            "InputMode": "as arguments",
-        }
-    actions += [
+        action("detect.text", UUID=text_uuid, WFInput=attachment(shortcut_input())),
         action(
             "runshellscript",
             UUID=script_uuid,
             Script=make_script("html" if as_html else "markdown"),
             Shell="/bin/zsh",
+            Input=attachment(action_output(text_uuid, "Text")),
+            InputMode="as arguments",
             RunAsRoot=False,
-            **script_parameters,
         ),
         action(
             "text.match",
@@ -281,7 +305,7 @@ def build_script_workflow(
         ),
         action("conditional", GroupingIdentifier=group, WFControlFlowMode=1),
     ]
-    if with_input and not as_html:
+    if not as_html:
         actions.append(
             action(
                 "output",
@@ -292,7 +316,7 @@ def build_script_workflow(
     # The HTML script already copied the link. No output, so the selection
     # stays and Command-V replaces it.
     actions.append(action("conditional", GroupingIdentifier=group, WFControlFlowMode=2))
-    return workflow(actions, with_input)
+    return workflow(actions)
 
 
 def workflow(actions: list[dict], with_input: bool = True) -> dict:

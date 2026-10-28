@@ -149,16 +149,11 @@ To make a Bugzilla Quick Action by hand, save `macos/shortcuts/bugzilla_link.js`
 printf %s "$(osascript -l JavaScript ~/bugzilla_link.js markdown "$1")"
 ```
 
-To make a page Quick Action by hand, save `macos/shortcuts/page_link.js` in your home folder. Make a shortcut with "Use as Quick Action" and "Services Menu" on, and set it to receive no input. Add these actions:
+To make a page Quick Action by hand, make a shortcut with "Use as Quick Action" and "Services Menu" on, and set it to receive no input. Add these actions:
 
-1. "Run Shell Script" with the shell zsh and this script. For Page HTML Link, change `markdown` to `html`.
-
-   ```sh
-   printf %s "$(osascript -l JavaScript ~/page_link.js markdown)"
-   ```
-
-2. "Match Text" with the pattern `^Error:` in Shell Script Result.
-3. "If" with Matches and "has any value". After "If", add "Show Notification" with Shell Script Result.
+1. "Run JavaScript for Mac Automation". Replace its script with `var PAGE_LINK_MODE = "markdown";` on the first line and the contents of `macos/shortcuts/page_link.js` after it. For Page HTML Link, change `markdown` to `html`. Do not use "Run Shell Script", because macOS then asks for Accessibility permission for `osascript` and not for Shortcuts.
+2. "Match Text" with the pattern `^Error:` in Result.
+3. "If" with Matches and "has any value". After "If", add "Show Notification" with Result.
 
 ### Change the Quick Actions
 

@@ -12,7 +12,7 @@ Project decisions for Claude Code sessions on macOS and Windows. README.md and W
 - Triggers: `:ghl` and `:ghhtml` for GitHub issues, `:zdl` and `:zdhtml` for Zendesk tickets (`tbpro.zendesk.com` only), `:bugl` and `:bughtml` for Mozilla Bugzilla bugs (public bugs only).
 - Tests: `uv run --with pytest --with pyperclip pytest tests`.
 - `macos/shortcuts/` has the macOS Quick Actions (issues #14, #17, #22, and #26) and the script that builds and signs them. Do not edit the `.shortcut` files. Change `build_shortcuts.py` or a `.js` file and run `build_shortcuts.py`. It rewrites all files, so restore the `.shortcut` files that you did not change.
-- The `.js` files run with `osascript -l JavaScript`, so you can test them in the terminal. The build puts them in single quotes in a shell script, so they must not contain single quotes.
+- The `.js` files run with `osascript -l JavaScript`, so you can test them in the terminal. The build puts `github_link.js` and `bugzilla_link.js` in single quotes in a shell script, so they must not contain single quotes.
 
 ## Quick Action decisions
 
@@ -22,7 +22,7 @@ Project decisions for Claude Code sessions on macOS and Windows. README.md and W
 - If `/opt/homebrew/bin/gh` or `/usr/local/bin/gh` exists, the GitHub Quick Actions use its token. Other ways to give a token are still open.
 - The Bugzilla Quick Actions accept the long URL, `bugzil.la/N`, a bare number, and `bug N` in any case, because Mozilla has only one Bugzilla. `:bugl` and `scripts/bugzilla_link.py` still accept only URLs. A change there needs a test on Windows too.
 - The README documents import and building by hand, because we do not know whether colleagues can import the files.
-- The page Quick Actions (#26) get no input, so they work without a selection, and they only copy the link. Safari and Chrome give the tab title and URL with AppleScript. Firefox gives only the window title, so the Quick Action presses Command-L and Command-C and needs Accessibility permission. It removes the browser name suffix, for example " — Mozilla Firefox", from the title.
+- The page Quick Actions (#26) get no input, so they work without a selection, and they only copy the link. Safari and Chrome give the tab title and URL with AppleScript. Firefox gives only the window title, so the Quick Action presses Command-L and Command-C and needs Accessibility permission. For this reason, `page_link.js` runs in a "Run JavaScript for Mac Automation" action (`runjavascriptforautomation`, parameter `Script`). macOS gives Accessibility permission to the app that starts a program, and in "Run Shell Script" this is `osascript`, not Shortcuts. Permission for `osascript` lets every script press keys. It removes the browser name suffix, for example " — Mozilla Firefox", from the title.
 - Windows uses AutoHotkey v2 for the same hotkeys: issue #15 for Zendesk, issue #18 for GitHub, and issue #23 for Bugzilla.
 
 ## macOS Shortcuts facts that caused bugs

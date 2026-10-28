@@ -15,8 +15,10 @@
 // error, the script prints "Error: <message>" and does not change the
 // clipboard, except that the Firefox URL copy replaces it.
 //
-// build_shortcuts.py puts this file in single quotes in a shell script, so
-// do not use single quotes here.
+// build_shortcuts.py puts this file in a "Run JavaScript for Mac Automation"
+// action, so that macOS asks for Accessibility permission for Shortcuts and
+// not for osascript. It adds `var PAGE_LINK_MODE = "markdown";` or "html"
+// before the file, because the action gives no arguments.
 
 ObjC.import("AppKit");
 
@@ -178,7 +180,8 @@ function copyLinks(links, mode) {
 }
 
 function run(argv) {
-  const [mode, browser = ""] = argv;
+  const mode = typeof PAGE_LINK_MODE === "undefined" ? argv[0] : PAGE_LINK_MODE;
+  const browser = typeof PAGE_LINK_MODE === "undefined" ? argv[1] || "" : "";
   try {
     const links = makeLinks(browser);
     copyLinks(links, mode);
