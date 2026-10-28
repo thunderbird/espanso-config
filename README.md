@@ -90,7 +90,11 @@ Two Quick Actions copy a link to the page in the front tab of Firefox, Safari, o
 
 Gmail in Firefox does not accept a rich text link from a Quick Action. For this reason, the HTML Quick Actions copy the link, and you paste it.
 
-The Quick Actions that use a selection do not work in Google Docs. Google Docs gives them an empty selection, so they show an error.
+Google Docs gives the Quick Actions an empty selection. If the selection is empty, the Zendesk, GitHub, and Bugzilla Quick Actions use the text on the clipboard and copy the link. In Google Docs, do these steps:
+
+1. Select the text and press Command-C.
+2. Press the keys of the Quick Action, for example Shift-Command-Control-Z.
+3. Press Command-V to replace the selection with the link.
 
 ### Install by import
 

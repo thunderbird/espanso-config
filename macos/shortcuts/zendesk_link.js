@@ -11,6 +11,8 @@
 // link. On error, the script prints "Error: <message>" and does not change
 // the clipboard. The script does not call the Zendesk API.
 //
+// If the selection is empty, the script uses the plain text on the clipboard.
+//
 // build_shortcuts.py puts this file in single quotes in a shell script, so
 // do not use single quotes here.
 
@@ -27,7 +29,7 @@ function parseTicket(text) {
   const match = NUMBER_RE.exec(text);
   if (!match) {
     const shown = text.length > 80 ? `${text.slice(0, 80)}...` : text;
-    throw new Error(`Select text that contains a ticket number. The selection was: "${shown}"`);
+    throw new Error(`Select or copy text that contains a ticket number. The text was: "${shown}"`);
   }
   const number = match[0];
   let rest = text.slice(match.index + number.length);
@@ -87,12 +89,28 @@ function copyHtml(links) {
   pasteboard.setStringForType($(links.markdown), $("public.utf8-plain-text"));
 }
 
+function copyMarkdown(links) {
+  const pasteboard = $.NSPasteboard.generalPasteboard;
+  pasteboard.clearContents;
+  pasteboard.setStringForType($(links.markdown), $("public.utf8-plain-text"));
+}
+
+function readClipboard() {
+  const text = $.NSPasteboard.generalPasteboard.stringForType($("public.utf8-plain-text"));
+  return text.isNil() ? "" : text.js;
+}
+
+// Google Docs gives an empty selection. Then the script uses the copied
+// text, and markdown mode also copies the link, so that Command-V pastes it.
 function run(argv) {
-  const [mode, text = ""] = argv;
+  const [mode, selection = ""] = argv;
   try {
-    const links = makeLinks(text);
+    const fromClipboard = !selection.trim();
+    const links = makeLinks(fromClipboard ? readClipboard() : selection);
     if (mode === "html") {
       copyHtml(links);
+    } else if (fromClipboard) {
+      copyMarkdown(links);
     }
     return links.markdown;
   } catch (e) {
