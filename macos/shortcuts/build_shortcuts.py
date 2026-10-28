@@ -7,7 +7,8 @@
 
 Writes unsigned shortcut files and signs them with `shortcuts sign`, so
 that other people can import them. Each Quick Action gets the selected
-text. The Zendesk Quick Actions find the first number in it. The GitHub
+text. The Zendesk Quick Actions find the first number in it, with
+zendesk_link.js, and put the text after the number in the link text. The GitHub
 Quick Actions need a GitHub issue URL and get the title from the GitHub API
 with github_link.js. The Bugzilla Quick Actions need a Bugzilla bug URL and
 get the summary from the Bugzilla REST API with bugzilla_link.js. The page
@@ -33,7 +34,6 @@ import tempfile
 import uuid
 from pathlib import Path
 
-ZENDESK_TICKET_URL = "https://tbpro.zendesk.com/agent/tickets/"
 OBJECT_REPLACEMENT = "\ufffc"
 
 ZENDESK_NAME = "Zendesk Link"
@@ -45,23 +45,9 @@ BUGZILLA_HTML_NAME = "Bugzilla HTML Link"
 PAGE_NAME = "Page Link"
 PAGE_HTML_NAME = "Page HTML Link"
 
-# Gets the ticket number as $1 and puts the HTML link and the Markdown link
-# on the clipboard as UTF-8.
-COPY_HTML_SCRIPT = f"""osascript -l JavaScript -e '
-function run(argv) {{
-  ObjC.import("AppKit");
-  const number = argv[0];
-  const url = "{ZENDESK_TICKET_URL}" + number;
-  const text = "Zendesk ticket #" + number;
-  const pasteboard = $.NSPasteboard.generalPasteboard;
-  pasteboard.clearContents;
-  pasteboard.setStringForType($(`<a href="${{url}}">${{text}}</a>`), $("public.html"));
-  pasteboard.setStringForType($(`[${{text}}](${{url}})`), $("public.utf8-plain-text"));
-}}' "$1"
-"""
-
 GITHUB_JS = (Path(__file__).parent / "github_link.js").read_text(encoding="utf-8")
 BUGZILLA_JS = (Path(__file__).parent / "bugzilla_link.js").read_text(encoding="utf-8")
+ZENDESK_JS = (Path(__file__).parent / "zendesk_link.js").read_text(encoding="utf-8")
 PAGE_JS = (Path(__file__).parent / "page_link.js").read_text(encoding="utf-8")
 
 
@@ -91,6 +77,11 @@ def github_script(mode: str) -> str:
 def bugzilla_script(mode: str) -> str:
     """Make the shell script that runs bugzilla_link.js on $1."""
     return osascript_line(BUGZILLA_JS, "bugzilla_link.js", mode)
+
+
+def zendesk_script(mode: str) -> str:
+    """Make the shell script that runs zendesk_link.js on $1."""
+    return osascript_line(ZENDESK_JS, "zendesk_link.js", mode)
 
 
 def new_uuid() -> str:
@@ -135,76 +126,8 @@ def action(identifier: str, **parameters) -> dict:
     }
 
 
-def markdown_actions(number: dict) -> list[dict]:
-    text_uuid = new_uuid()
-    return [
-        action(
-            "gettext",
-            UUID=text_uuid,
-            WFTextActionText=token_string(
-                "[Zendesk ticket #", number, f"]({ZENDESK_TICKET_URL}", number, ")"
-            ),
-        ),
-        action(
-            "output",
-            WFOutput=token_string(action_output(text_uuid, "Text")),
-            WFNoOutputSurfaceBehavior="Do Nothing",
-        ),
-    ]
-
-
-def html_actions(number: dict) -> list[dict]:
-    # No output, so the selection stays and Command-V replaces it.
-    return [
-        action(
-            "runshellscript",
-            Script=COPY_HTML_SCRIPT,
-            Shell="/bin/zsh",
-            Input=attachment(number),
-            InputMode="as arguments",
-            RunAsRoot=False,
-        )
-    ]
-
-
 def build_zendesk_workflow(as_html: bool) -> dict:
-    match_uuid = new_uuid()
-    item_uuid = new_uuid()
-    group = new_uuid()
-    number = action_output(item_uuid, "Item from List")
-
-    actions = [
-        action(
-            "text.match",
-            UUID=match_uuid,
-            WFMatchTextPattern=r"\d+",
-            text=token_string(shortcut_input()),
-        ),
-        action(
-            "getitemfromlist",
-            UUID=item_uuid,
-            WFItemSpecifier="First Item",
-            WFInput=attachment(action_output(match_uuid, "Matches")),
-        ),
-        # 100 is "has any value".
-        action(
-            "conditional",
-            GroupingIdentifier=group,
-            WFControlFlowMode=0,
-            WFCondition=100,
-            WFInput={"Type": "Variable", "Variable": attachment(number)},
-        ),
-        *(html_actions(number) if as_html else markdown_actions(number)),
-        action("conditional", GroupingIdentifier=group, WFControlFlowMode=1),
-        action(
-            "notification",
-            WFNotificationActionTitle="No Zendesk ticket number",
-            WFNotificationActionBody="Select text that contains a ticket number.",
-            WFNotificationActionSound=False,
-        ),
-        action("conditional", GroupingIdentifier=group, WFControlFlowMode=2),
-    ]
-    return workflow(actions)
+    return build_script_workflow(zendesk_script, "No Zendesk ticket number", as_html)
 
 
 def build_github_workflow(as_html: bool) -> dict:

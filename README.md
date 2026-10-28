@@ -62,7 +62,8 @@ Two Quick Actions change a selected ticket number into a Zendesk ticket link:
 
 - Zendesk Link, Command-Control-Z: replaces the selection with the Markdown link, for example `[Zendesk ticket #8486](https://tbpro.zendesk.com/agent/tickets/8486)`.
 - Zendesk HTML Link, Shift-Command-Control-Z: copies a rich text link and does not change the selection. Press Command-V to replace the selection with the link. Apps that do not accept rich text, for example VS Code, paste the Markdown link.
-- If the selection has no number, both Quick Actions show a notification and do not change the selection. If the selection has more than one number, they use the first number.
+- The Quick Actions use the first number in the selection and ignore the text before it. If text follows the number, it goes in the link text. For example, `8486 Cannot log in` gives `[Zendesk ticket #8486: Cannot log in](https://tbpro.zendesk.com/agent/tickets/8486)`. A selected ticket URL followed by text gives the same link.
+- If the selection has no number, both Quick Actions show a notification and do not change the selection.
 
 Two Quick Actions change a selected GitHub issue URL into a link with the issue title, the same link that `:ghl` makes:
 
@@ -93,7 +94,7 @@ Gmail in Firefox does not accept a rich text link from a Quick Action. For this 
 
 1. Download the `.shortcut` files that you want from `macos/shortcuts/`.
 2. Double-click each file and select "Add Shortcut".
-3. In Shortcuts, open Settings > Advanced and turn on "Allow Running Scripts". The HTML Quick Actions and the GitHub, Bugzilla, and page Quick Actions need it.
+3. In Shortcuts, open Settings > Advanced and turn on "Allow Running Scripts". All Quick Actions need it.
 4. Add the keyboard shortcuts. Open System Settings > Keyboard > Keyboard Shortcuts > Services. Double-click to the right of the Quick Action name and press its keys from the lists above. The page Quick Actions are in the Shortcuts group, and the other Quick Actions are in the Text group.
 5. The first time that you use a page Quick Action in a browser, macOS asks if Shortcuts can control the browser. Select "Allow".
 
@@ -101,36 +102,9 @@ If a shortcut with the same name exists, Shortcuts adds the new one with a numbe
 
 ### Build by hand
 
-If you cannot import the files, make each Zendesk Quick Action in the Shortcuts app:
+If you cannot import the files, make the Quick Actions in the Shortcuts app. Give each shortcut the name from the lists above. Open the shortcut details with the "i" button, and turn on "Use as Quick Action" and "Services Menu". After you make them, do steps 3 and 4 of "Install by import".
 
-1. Select File > New Shortcut, and give it the name "Zendesk Link" or "Zendesk HTML Link".
-2. Open the shortcut details with the "i" button. Turn on "Use as Quick Action" and "Services Menu", and set it to receive Text.
-3. Add the action "Match Text". Set the pattern to `\d+`, and set the text to Shortcut Input.
-4. Add "Get Item from List" with "First Item" from Matches.
-5. Add "If" with Item from List and "has any value".
-6. For Zendesk Link, add these actions after "If":
-   1. Add "Text" with `[Zendesk ticket #Item from List](https://tbpro.zendesk.com/agent/tickets/Item from List)`. Insert "Item from List" as a variable two times.
-   2. Add "Stop and Output" with the Text variable.
-7. For Zendesk HTML Link, add "Run Shell Script" after "If". Set the shell to zsh, set "Pass Input" to "as arguments", set the input to Item from List, and use this script:
-
-   ```sh
-   osascript -l JavaScript -e '
-   function run(argv) {
-     ObjC.import("AppKit");
-     const number = argv[0];
-     const url = "https://tbpro.zendesk.com/agent/tickets/" + number;
-     const text = "Zendesk ticket #" + number;
-     const pasteboard = $.NSPasteboard.generalPasteboard;
-     pasteboard.clearContents;
-     pasteboard.setStringForType($(`<a href="${url}">${text}</a>`), $("public.html"));
-     pasteboard.setStringForType($(`[${text}](${url})`), $("public.utf8-plain-text"));
-   }' "$1"
-   ```
-
-8. After "Otherwise", add "Show Notification" with the text "Select text that contains a ticket number."
-9. Do steps 3 and 4 of "Install by import".
-
-To make a GitHub Quick Action by hand, save `macos/shortcuts/github_link.js` in your home folder, and make a Quick Action with these actions:
+To make a GitHub Quick Action by hand, save `macos/shortcuts/github_link.js` in your home folder. Set the Quick Action to receive Text, and add these actions:
 
 1. "Get Text from Input" with Shortcut Input.
 2. "Run Shell Script" with the shell zsh and "Pass Input" set to "as arguments". Set the input to Text, and use this script. For GitHub HTML Link, change `markdown` to `html`.
@@ -150,7 +124,13 @@ To make a Bugzilla Quick Action by hand, save `macos/shortcuts/bugzilla_link.js`
 printf %s "$(osascript -l JavaScript ~/bugzilla_link.js markdown "$1")"
 ```
 
-To make a page Quick Action by hand, make a shortcut with "Use as Quick Action" and "Services Menu" on, and set it to receive no input. Add these actions:
+To make a Zendesk Quick Action by hand, save `macos/shortcuts/zendesk_link.js` in your home folder. Then make a Quick Action with the same actions as a GitHub Quick Action, but use this script in "Run Shell Script". For Zendesk HTML Link, change `markdown` to `html`.
+
+```sh
+printf %s "$(osascript -l JavaScript ~/zendesk_link.js markdown "$1")"
+```
+
+To make a page Quick Action by hand, set the Quick Action to receive no input. Add these actions:
 
 1. "Run JavaScript for Mac Automation". Replace its script with `var PAGE_LINK_MODE = "markdown";` on the first line and the contents of `macos/shortcuts/page_link.js` after it. For Page HTML Link, change `markdown` to `html`.
 2. "Match Text" with the pattern `^Error:` in Result.
@@ -158,7 +138,7 @@ To make a page Quick Action by hand, make a shortcut with "Use as Quick Action" 
 
 ### Change the Quick Actions
 
-`macos/shortcuts/build_shortcuts.py` makes the `.shortcut` files and signs them with `shortcuts sign`. It puts `macos/shortcuts/github_link.js` in the GitHub Quick Actions, `macos/shortcuts/bugzilla_link.js` in the Bugzilla Quick Actions, and `macos/shortcuts/page_link.js` in the page Quick Actions. After you change one of these files, run the build script on a Mac:
+`macos/shortcuts/build_shortcuts.py` makes the `.shortcut` files and signs them with `shortcuts sign`. It puts `macos/shortcuts/zendesk_link.js` in the Zendesk Quick Actions, `macos/shortcuts/github_link.js` in the GitHub Quick Actions, `macos/shortcuts/bugzilla_link.js` in the Bugzilla Quick Actions, and `macos/shortcuts/page_link.js` in the page Quick Actions. After you change one of these files, run the build script on a Mac:
 
 ```sh
 uv run macos/shortcuts/build_shortcuts.py

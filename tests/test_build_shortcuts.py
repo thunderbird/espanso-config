@@ -18,28 +18,30 @@ def test_token_string_positions():
     assert list(value["attachmentsByRange"]) == ["{1, 1}", "{3, 1}"]
 
 
-def test_zendesk_markdown_workflow_outputs_link():
+def test_zendesk_markdown_workflow_outputs_script_result():
     workflow = build_shortcuts.build_zendesk_workflow(as_html=False)
     assert identifiers(workflow) == [
-        "text.match", "getitemfromlist", "conditional", "gettext", "output",
-        "conditional", "notification", "conditional",
+        "detect.text", "runshellscript", "text.match", "conditional", "notification", "conditional", "output",
+        "conditional",
     ]
-    text = workflow["WFWorkflowActions"][3]["WFWorkflowActionParameters"]["WFTextActionText"]
-    assert text["Value"]["string"] == (
-        "[Zendesk ticket #￼](https://tbpro.zendesk.com/agent/tickets/￼)"
-    )
+    params = workflow["WFWorkflowActions"][4]["WFWorkflowActionParameters"]
+    assert params["WFNotificationActionTitle"] == "No Zendesk ticket number"
+    script = workflow["WFWorkflowActions"][1]["WFWorkflowActionParameters"]["Script"]
+    assert script.endswith(' markdown "$1")"\n')
+    assert "GH_TOKEN" not in script
 
 
-def test_zendesk_html_workflow_copies_without_output():
+def test_zendesk_html_workflow_has_no_output():
     workflow = build_shortcuts.build_zendesk_workflow(as_html=True)
     assert identifiers(workflow) == [
-        "text.match", "getitemfromlist", "conditional", "runshellscript",
-        "conditional", "notification", "conditional",
+        "detect.text", "runshellscript", "text.match", "conditional", "notification", "conditional", "conditional",
     ]
-    params = workflow["WFWorkflowActions"][3]["WFWorkflowActionParameters"]
-    assert params["InputMode"] == "as arguments"
-    assert params["Input"]["WFSerializationType"] == "WFTextTokenAttachment"
-    assert 'pasteboard.setStringForType($(`<a href="${url}">${text}</a>`), $("public.html"));' in params["Script"]
+    script = workflow["WFWorkflowActions"][1]["WFWorkflowActionParameters"]["Script"]
+    assert script.endswith(' html "$1")"\n')
+
+
+def test_zendesk_js_has_no_single_quotes():
+    assert "'" not in build_shortcuts.ZENDESK_JS
 
 
 def test_github_markdown_workflow_outputs_script_result():
