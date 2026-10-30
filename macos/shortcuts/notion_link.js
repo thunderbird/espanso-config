@@ -2,7 +2,7 @@
 //
 // Usage: osascript -l JavaScript notion_link.js markdown|html <text>
 //
-// Accepts a notion.so or notion.site page URL and a page ID (32 hex
+// Accepts a notion.so, notion.com, or notion.site page URL and a page ID (32 hex
 // characters, with or without hyphens), and prints
 // `[Notion 89abcdef: Page title](url)`. The link text shows only the last 8
 // characters of the page ID, so that the link is short. The link target
@@ -24,7 +24,7 @@
 
 ObjC.import("AppKit");
 
-const URL_RE = /^https?:\/\/(?:www\.)?(?:notion\.so|[\w-]+\.notion\.site)\/([^?#\s]*)(\?[^#\s]*)?(#\S*)?$/i;
+const URL_RE = /^https?:\/\/(?:(?:www\.|app\.)?notion\.(?:so|com)|[\w-]+\.notion\.site)\/([^?#\s]*)(\?[^#\s]*)?(#\S*)?$/i;
 const ID_RE = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
 // The last path segment is "Page-title-<id>" or "<id>".
 const SEGMENT_RE = /^(?:(.*)-)?([0-9a-f]{32})$/i;

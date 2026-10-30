@@ -36,6 +36,11 @@ def test_keeps_block_fragment():
     assert markdown(f"{PAGE}?pvs=4#fedcba") == f"[Notion 89abcdef: Release checklist]({PAGE}#fedcba)"
 
 
+def test_app_notion_com():
+    url = f"https://app.notion.com/p/mzthunderbird/GDPR-DSARs-for-Thundermail-{ID}"
+    assert markdown(f"{url}?source=copy_link") == f"[Notion 89abcdef: GDPR DSARs for Thundermail]({url})"
+
+
 def test_notion_site():
     url = f"https://thunderbird.notion.site/Release-checklist-{ID}"
     assert markdown(url) == f"[Notion 89abcdef: Release checklist]({url})"
