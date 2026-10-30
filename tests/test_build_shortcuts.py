@@ -92,3 +92,28 @@ def test_bugzilla_html_workflow_has_no_output():
 
 def test_bugzilla_js_has_no_single_quotes():
     assert "'" not in build_shortcuts.BUGZILLA_JS
+
+
+def test_notion_markdown_workflow_outputs_script_result():
+    workflow = build_shortcuts.build_notion_workflow(as_html=False)
+    assert identifiers(workflow) == [
+        "detect.text", "runshellscript", "text.match", "conditional", "notification", "conditional", "output",
+        "conditional",
+    ]
+    params = workflow["WFWorkflowActions"][4]["WFWorkflowActionParameters"]
+    assert params["WFNotificationActionTitle"] == "No Notion link"
+    script = workflow["WFWorkflowActions"][1]["WFWorkflowActionParameters"]["Script"]
+    assert script.endswith(' markdown "$1")"\n')
+
+
+def test_notion_html_workflow_has_no_output():
+    workflow = build_shortcuts.build_notion_workflow(as_html=True)
+    assert identifiers(workflow) == [
+        "detect.text", "runshellscript", "text.match", "conditional", "notification", "conditional", "conditional",
+    ]
+    script = workflow["WFWorkflowActions"][1]["WFWorkflowActionParameters"]["Script"]
+    assert script.endswith(' html "$1")"\n')
+
+
+def test_notion_js_has_no_single_quotes():
+    assert "'" not in build_shortcuts.NOTION_JS
