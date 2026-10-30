@@ -99,7 +99,7 @@ uv run --script scripts\gh_issue_link.py
 
 ## Zendesk hotkeys
 
-The AutoHotkey script `windows/autohotkey/links.ahk` adds two hotkeys that work without espanso and uv:
+The AutoHotkey script `windows/autohotkey/links.ahk` adds two hotkeys that work without espanso and uv. [windows/ZENDESK_HOTKEYS.md](windows/ZENDESK_HOTKEYS.md) is a one-page guide for support agents that installs them without a copy of this repository.
 
 | Hotkey | Result |
 | --- | --- |
