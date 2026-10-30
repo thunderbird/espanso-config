@@ -1,6 +1,6 @@
 # espanso-config
 
-Shared [espanso](https://espanso.org/) matches for macOS and Windows. For the Windows setup, read [WINDOWS.md](WINDOWS.md). To work on an issue with Claude Code, read [CONTRIBUTING.md](CONTRIBUTING.md).
+Shared [espanso](https://espanso.org/) matches for macOS and Windows. For the Windows setup, read [WINDOWS.md](WINDOWS.md). Support agents on Windows who only want the Zendesk link hotkeys can read [windows/ZENDESK_HOTKEYS.md](windows/ZENDESK_HOTKEYS.md). To work on an issue with Claude Code, read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## `:ghl` and `:ghhtml`: GitHub issue URL to a link
 
