@@ -86,7 +86,7 @@ Two Quick Actions change a selected Notion page URL into a link with the page ti
 - Notion HTML Link, Shift-Control-Command-Y: copies a rich text link and does not change the selection. Press Command-V to replace the selection with the link.
 - A Notion page ID has 32 characters. The link text shows only the last 8, so that the link is short. The link target keeps the full ID, because Notion accepts only the full ID.
 - The Quick Actions take the title from the words before the ID in the URL, because most Notion pages are private and the Notion API needs a token. These words do not have the punctuation of the title. If the URL has no title words, the link text is only `Notion 89abcdef`.
-- The Quick Actions accept `notion.so` and `notion.site` URLs and a page ID alone, with or without hyphens. They remove the query, for example `?pvs=4`, and keep a block link after `#`. For a page that opens on top of a database (`?p=<id>`), the link goes to the page.
+- The Quick Actions accept `notion.so`, `app.notion.com`, and `notion.site` URLs and a page ID alone, with or without hyphens. They remove the query, for example `?pvs=4`, and keep a block link after `#`. For a page that opens on top of a database (`?p=<id>`), the link goes to the page.
 - If the selection is not a Notion page URL or page ID, both Quick Actions show the error in a notification. The selection does not change.
 
 Two Quick Actions copy a link to the page in the front tab of Firefox, Safari, or Chrome, with the page title as link text. They need no selection:
