@@ -24,7 +24,8 @@ Project decisions for Claude Code sessions on macOS and Windows. README.md and W
 - The Bugzilla Quick Actions accept the long URL, `bugzil.la/N`, a bare number, and `bug N` in any case, because Mozilla has only one Bugzilla. `:bugl` and `scripts/bugzilla_link.py` still accept only URLs. A change there needs a test on Windows too.
 - The README documents import and building by hand, because we do not know whether colleagues can import the files.
 - The page Quick Actions (#26) get no input, so they work without a selection, and they only copy the link. Safari and Chrome give the tab title and URL with AppleScript. Firefox gives only the window title, with " — <profile name>" if there is more than one profile. The Quick Action finds the most recent URL with this title in a copy of `places.sqlite` and `places.sqlite-wal` of each open profile. A profile is open if its `places.sqlite-wal` is not empty. The user chose this over keystrokes, because keystrokes need Accessibility permission (see below). `page_link.js` runs in a "Run JavaScript for Mac Automation" action (`runjavascriptforautomation`, parameter `Script`).
-- Windows uses AutoHotkey v2 for the same hotkeys. Issue #29 covers all of them and replaces #15, #18, and #23.
+- Windows uses AutoHotkey v2 for the same hotkeys. Issue #29 covers all of them and replaces #15, #18, and #23. The Zendesk hotkeys came first, because colleagues wanted them first. `windows/autohotkey/links.ahk` has the hotkeys. Each link type has its own `.ahk` file with pure functions, which `tests/test_*_ahk.py` runs from stdin with `AutoHotkey64.exe /ErrorStdOut=UTF-8 *`. The script must not run as a test, because `#SingleInstance Force` would stop the running copy.
+- AutoHotkey prints nothing to a Git Bash pipe. Run it from Python or PowerShell. winget installs it per user in `%LOCALAPPDATA%\Programs\AutoHotkey\v2`.
 
 ## macOS Shortcuts facts that caused bugs
 
