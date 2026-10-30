@@ -3,7 +3,7 @@
 # requires-python = ">=3.10"
 # dependencies = []
 # ///
-"""Build the Zendesk, GitHub, Bugzilla, and page Quick Actions for the macOS Shortcuts app.
+"""Build the Zendesk, GitHub, Bugzilla, Notion, and page Quick Actions for the macOS Shortcuts app.
 
 Writes unsigned shortcut files and signs them with `shortcuts sign`, so
 that other people can import them. Each Quick Action gets the selected
@@ -11,7 +11,9 @@ text. The Zendesk Quick Actions find the first number in it, with
 zendesk_link.js, and put the text after the number in the link text. The GitHub
 Quick Actions need a GitHub issue URL and get the title from the GitHub API
 with github_link.js. The Bugzilla Quick Actions need a Bugzilla bug URL and
-get the summary from the Bugzilla REST API with bugzilla_link.js. The page
+get the summary from the Bugzilla REST API with bugzilla_link.js. The Notion
+Quick Actions need a Notion page URL and take the title from the URL with
+notion_link.js. The page
 Quick Actions get no input. They copy a link to the page in the front browser
 tab, with the page title as link text, with page_link.js.
 
@@ -42,11 +44,14 @@ GITHUB_NAME = "GitHub Link"
 GITHUB_HTML_NAME = "GitHub HTML Link"
 BUGZILLA_NAME = "Bugzilla Link"
 BUGZILLA_HTML_NAME = "Bugzilla HTML Link"
+NOTION_NAME = "Notion Link"
+NOTION_HTML_NAME = "Notion HTML Link"
 PAGE_NAME = "Page Link"
 PAGE_HTML_NAME = "Page HTML Link"
 
 GITHUB_JS = (Path(__file__).parent / "github_link.js").read_text(encoding="utf-8")
 BUGZILLA_JS = (Path(__file__).parent / "bugzilla_link.js").read_text(encoding="utf-8")
+NOTION_JS = (Path(__file__).parent / "notion_link.js").read_text(encoding="utf-8")
 ZENDESK_JS = (Path(__file__).parent / "zendesk_link.js").read_text(encoding="utf-8")
 PAGE_JS = (Path(__file__).parent / "page_link.js").read_text(encoding="utf-8")
 
@@ -77,6 +82,11 @@ def github_script(mode: str) -> str:
 def bugzilla_script(mode: str) -> str:
     """Make the shell script that runs bugzilla_link.js on $1."""
     return osascript_line(BUGZILLA_JS, "bugzilla_link.js", mode)
+
+
+def notion_script(mode: str) -> str:
+    """Make the shell script that runs notion_link.js on $1."""
+    return osascript_line(NOTION_JS, "notion_link.js", mode)
 
 
 def zendesk_script(mode: str) -> str:
@@ -138,6 +148,10 @@ def build_github_workflow(as_html: bool) -> dict:
 
 def build_bugzilla_workflow(as_html: bool) -> dict:
     return build_script_workflow(bugzilla_script, "No Bugzilla link", as_html)
+
+
+def build_notion_workflow(as_html: bool) -> dict:
+    return build_script_workflow(notion_script, "No Notion link", as_html)
 
 
 def build_page_workflow(as_html: bool) -> dict:
@@ -297,6 +311,8 @@ def main() -> int:
         (GITHUB_HTML_NAME, build_github_workflow, True),
         (BUGZILLA_NAME, build_bugzilla_workflow, False),
         (BUGZILLA_HTML_NAME, build_bugzilla_workflow, True),
+        (NOTION_NAME, build_notion_workflow, False),
+        (NOTION_HTML_NAME, build_notion_workflow, True),
         (PAGE_NAME, build_page_workflow, False),
         (PAGE_HTML_NAME, build_page_workflow, True),
     ):

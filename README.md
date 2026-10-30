@@ -56,7 +56,7 @@ In Zendesk, `:ghl`, `:zdl`, and `:bugl` expand to HTML links instead of Markdown
 
 ## macOS Quick Actions: selected text or web page to a link
 
-Six Quick Actions for the macOS Shortcuts app change selected text into a link. Two more Quick Actions copy a link to the current web page. A Quick Action is a shortcut that runs from the Services menu or a keyboard shortcut in any app. The Quick Actions do not use espanso, uv, or Python.
+Eight Quick Actions for the macOS Shortcuts app change selected text into a link. Two more Quick Actions copy a link to the current web page. A Quick Action is a shortcut that runs from the Services menu or a keyboard shortcut in any app. The Quick Actions do not use espanso, uv, or Python.
 
 Two Quick Actions change a selected ticket number into a Zendesk ticket link:
 
@@ -80,6 +80,15 @@ Two Quick Actions change a selected Mozilla Bugzilla bug URL into a link with th
 - The Quick Actions get the summary from the Bugzilla REST API without an API key, so they work only for public bugs.
 - If the selection is not a Bugzilla bug URL or bug number, or the API call fails, both Quick Actions show the error in a notification. The selection does not change.
 
+Two Quick Actions change a selected Notion page URL into a link with the page title and the last 8 characters of the page ID:
+
+- Notion Link, Control-Command-Y: replaces the selection with the Markdown link, for example `[Notion 89abcdef: Release checklist](https://www.notion.so/mzthunderbird/Release-checklist-0123456789abcdef0123456789abcdef)`.
+- Notion HTML Link, Shift-Control-Command-Y: copies a rich text link and does not change the selection. Press Command-V to replace the selection with the link.
+- A Notion page ID has 32 characters. The link text shows only the last 8, so that the link is short. The link target keeps the full ID, because Notion accepts only the full ID.
+- The Quick Actions take the title from the words before the ID in the URL, because most Notion pages are private and the Notion API needs a token. These words do not have the punctuation of the title. If the URL has no title words, the link text is only `Notion 89abcdef`.
+- The Quick Actions accept `notion.so` and `notion.site` URLs and a page ID alone, with or without hyphens. They remove the query, for example `?pvs=4`, and keep a block link after `#`. For a page that opens on top of a database (`?p=<id>`), the link goes to the page.
+- If the selection is not a Notion page URL or page ID, both Quick Actions show the error in a notification. The selection does not change.
+
 Two Quick Actions copy a link to the page in the front tab of Firefox, Safari, or Chrome, with the page title as link text. They need no selection:
 
 - Page Link, Control-Command-L: copies the Markdown link, for example `[Change a selected Bugzilla bug URL into a link with macOS Quick Actions · Issue #22 · thunderbird/espanso-config](https://github.com/thunderbird/espanso-config/issues/22)`.
@@ -90,7 +99,7 @@ Two Quick Actions copy a link to the page in the front tab of Firefox, Safari, o
 
 Gmail in Firefox does not accept a rich text link from a Quick Action. For this reason, the HTML Quick Actions copy the link, and you paste it.
 
-Google Docs gives the Quick Actions an empty selection. If the selection is empty, the Zendesk, GitHub, and Bugzilla Quick Actions use the text on the clipboard and copy the link. In Google Docs, do these steps:
+Google Docs gives the Quick Actions an empty selection. If the selection is empty, the Zendesk, GitHub, Bugzilla, and Notion Quick Actions use the text on the clipboard and copy the link. In Google Docs, do these steps:
 
 1. Select the text and press Command-C.
 2. Press the keys of the Quick Action, for example Shift-Command-Control-Z.
@@ -130,6 +139,12 @@ To make a Bugzilla Quick Action by hand, save `macos/shortcuts/bugzilla_link.js`
 printf %s "$(osascript -l JavaScript ~/bugzilla_link.js markdown "$1")"
 ```
 
+To make a Notion Quick Action by hand, save `macos/shortcuts/notion_link.js` in your home folder. Then make a Quick Action with the same actions as a GitHub Quick Action, but use this script in "Run Shell Script". For Notion HTML Link, change `markdown` to `html`.
+
+```sh
+printf %s "$(osascript -l JavaScript ~/notion_link.js markdown "$1")"
+```
+
 To make a Zendesk Quick Action by hand, save `macos/shortcuts/zendesk_link.js` in your home folder. Then make a Quick Action with the same actions as a GitHub Quick Action, but use this script in "Run Shell Script". For Zendesk HTML Link, change `markdown` to `html`.
 
 ```sh
@@ -144,7 +159,7 @@ To make a page Quick Action by hand, set the Quick Action to receive no input. A
 
 ### Change the Quick Actions
 
-`macos/shortcuts/build_shortcuts.py` makes the `.shortcut` files and signs them with `shortcuts sign`. It puts `macos/shortcuts/zendesk_link.js` in the Zendesk Quick Actions, `macos/shortcuts/github_link.js` in the GitHub Quick Actions, `macos/shortcuts/bugzilla_link.js` in the Bugzilla Quick Actions, and `macos/shortcuts/page_link.js` in the page Quick Actions. After you change one of these files, run the build script on a Mac:
+`macos/shortcuts/build_shortcuts.py` makes the `.shortcut` files and signs them with `shortcuts sign`. It puts `macos/shortcuts/zendesk_link.js` in the Zendesk Quick Actions, `macos/shortcuts/github_link.js` in the GitHub Quick Actions, `macos/shortcuts/bugzilla_link.js` in the Bugzilla Quick Actions, `macos/shortcuts/notion_link.js` in the Notion Quick Actions, and `macos/shortcuts/page_link.js` in the page Quick Actions. After you change one of these files, run the build script on a Mac:
 
 ```sh
 uv run macos/shortcuts/build_shortcuts.py
