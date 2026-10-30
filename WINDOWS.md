@@ -97,8 +97,40 @@ To see the exact output of a macro, run the script yourself. First copy a URL, t
 uv run --script scripts\gh_issue_link.py
 ```
 
+## Zendesk hotkeys
+
+The AutoHotkey script `windows/autohotkey/links.ahk` adds two hotkeys that work without espanso and uv:
+
+| Hotkey | Result |
+| --- | --- |
+| Ctrl+Win+Z | Replaces the selection with the Markdown link, for example `[Zendesk ticket #12345: blah blah](https://tbpro.zendesk.com/agent/tickets/12345)` |
+| Shift+Ctrl+Win+Z | Copies the link as rich text. Then press Ctrl+V. Use this in Gmail. |
+
+The hotkeys use the first number in the selection and ignore the text before it. Text after the number goes in the link text, so a selected `12345 blah blah` or a ticket URL followed by `blah blah` gives the link text `Zendesk ticket #12345: blah blah`. If nothing is selected, the hotkeys use the text on the clipboard and only copy the link. If the text has no number, a tooltip shows the error and nothing changes.
+
+### Install the hotkeys
+
+1. Install AutoHotkey v2. In PowerShell, run `winget install --id AutoHotkey.AutoHotkey -e`.
+2. Open PowerShell in the root of this repository. To start the script now and at each login, run these commands:
+
+   ```powershell
+   $startup = [Environment]::GetFolderPath("Startup")
+   $shortcut = (New-Object -ComObject WScript.Shell).CreateShortcut("$startup\links.lnk")
+   $shortcut.TargetPath = "$PWD\windows\autohotkey\links.ahk"
+   $shortcut.Save()
+   Start-Process "$startup\links.lnk"
+   ```
+
+The green H icon in the notification area shows that the script runs. The shortcut points to the repository, so the script stays current when you pull. After you pull, right-click the icon and click **Reload Script**.
+
+`links.ahk` needs `zendesk_link.ahk` and `clipboard.ahk` in the same folder. If you copy the script, copy all three files.
+
+In VS Code, Ctrl+C without a selection copies the current line, so the hotkey uses that line. Select the text first.
+
 ## Test
 
 ```powershell
 uv run --with pytest --with pyperclip pytest tests
 ```
+
+The AutoHotkey tests run only if AutoHotkey v2 is installed.
