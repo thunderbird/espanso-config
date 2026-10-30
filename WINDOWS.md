@@ -104,7 +104,7 @@ The AutoHotkey script `windows/autohotkey/links.ahk` adds two hotkeys that work 
 | Hotkey | Result |
 | --- | --- |
 | Ctrl+Win+Z | Replaces the selection with the Markdown link, for example `[Zendesk ticket #12345: blah blah](https://tbpro.zendesk.com/agent/tickets/12345)` |
-| Shift+Ctrl+Win+Z | Copies the link as rich text. Then press Ctrl+V. Use this in Gmail. |
+| Shift+Ctrl+Win+Z | Copies the link as rich text. Then press Ctrl+V. Use this in Gmail and Slack. Slack shows a Markdown link as plain text. |
 
 The hotkeys use the first number in the selection and ignore the text before it. Text after the number goes in the link text, so a selected `12345 blah blah` or a ticket URL followed by `blah blah` gives the link text `Zendesk ticket #12345: blah blah`. If nothing is selected, the hotkeys use the text on the clipboard and only copy the link. If the text has no number, a tooltip shows the error and nothing changes.
 
