@@ -1,0 +1,5 @@
+# Type ":hamburger" to get the name of the Thunderbird app menu with its icon.
+# match/hamburger.yml has the same content.
+matches:
+  - trigger: ":hamburger"
+    replace: "Thunderbird app menu {menu ☰}"
