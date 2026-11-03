@@ -50,6 +50,10 @@ For apps that use HTML instead of Markdown, type `:bughtml`. The trigger expands
 
 The script gets the summary from the Bugzilla REST API without an API key, so it works only for public bugs. If the clipboard does not contain a bug URL, or the API call fails, the trigger expands to an error message and the clipboard does not change.
 
+## `:hamburger`: Thunderbird app menu
+
+Type `:hamburger`. The trigger expands to `Thunderbird app menu {menu ☰}`. The trigger does not use the clipboard, uv, or Python.
+
 ## HTML links in Zendesk
 
 In Zendesk, `:ghl`, `:zdl`, and `:bugl` expand to HTML links instead of Markdown. Espanso finds Zendesk by the window title and the program, so the browser tab title must contain "Zendesk", and the browser must be Firefox, Chrome, Edge, or Safari. Other apps, for example VS Code, always get Markdown, also if their window title contains "Zendesk". To add another HTML app, add a configuration file like `config/zendesk.yml` with a different `filter_title`.
@@ -182,6 +186,7 @@ for f in scripts/run_uv_script.sh scripts/gh_issue_link.py scripts/zd_ticket_lin
   match/gh_issue_link.yml match/gh_issue_html.yml \
   match/zd_ticket_link.yml match/zd_ticket_html.yml \
   match/bugzilla_link.yml match/bugzilla_html.yml match/_zendesk_html.yml \
+  match/hamburger.yml \
   config/zendesk.yml; do
   ln -s "$PWD/$f" "$CONFIG/$f"
 done
