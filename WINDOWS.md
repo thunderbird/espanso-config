@@ -1,6 +1,6 @@
 # Windows setup
 
-This page tells you how to install the `:ghl`, `:ghhtml`, `:zdl`, `:zdhtml`, `:bugl`, `:bughtml`, and `:hamburger` macros on Windows. [README.md](README.md) describes what each macro does.
+This page tells you how to install the `:ghl`, `:ghhtml`, `:zdl`, `:zdhtml`, `:bugl`, `:bughtml`, `:hamburger`, and `:warmgreet` macros on Windows. [README.md](README.md) describes what each macro does.
 
 The Windows match files are in `windows/match/`. They have the same names and triggers as the macOS files in `match/`. On Windows, espanso runs `shell` variables in PowerShell, so the Windows files use `script` variables, which run uv directly.
 
@@ -68,7 +68,7 @@ espanso restart
 espansod match list -t | Out-String
 ```
 
-The list must include `:ghl`, `:ghhtml`, `:zdl`, `:zdhtml`, `:bugl`, `:bughtml`, and `:hamburger`, each one time.
+The list must include `:ghl`, `:ghhtml`, `:zdl`, `:zdhtml`, `:bugl`, `:bughtml`, `:hamburger`, and `:warmgreet`, each one time.
 
 ## Use
 

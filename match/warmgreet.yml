@@ -1,0 +1,14 @@
+# Type ":warmgreet" to get one of four Thundermail greetings, chosen at random.
+# windows/match/warmgreet.yml has the same content.
+matches:
+  - trigger: ":warmgreet"
+    replace: "{{greeting}}"
+    vars:
+      - name: greeting
+        type: random
+        params:
+          choices:
+            - "Thanks for supporting Thundermail."
+            - "We appreciate your support of Thundermail."
+            - "Thank you for choosing Thundermail."
+            - "We are grateful that you use Thundermail."
