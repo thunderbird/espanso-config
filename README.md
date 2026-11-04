@@ -69,7 +69,7 @@ Type `:warmclose`. The trigger expands to one of these closings, chosen at rando
 
 - `Thanks again for your support of Thundermail.`
 - `Thanks once more for supporting Thundermail.`
-- `As always we're grateful for your support of Thundermail.`
+- `As always, we're grateful for your support of Thundermail.`
 - `We're always grateful for those who support Thundermail.`
 
 ## HTML links in Zendesk
