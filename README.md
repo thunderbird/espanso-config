@@ -63,6 +63,15 @@ Type `:warmgreet`. The trigger expands to one of these greetings, chosen at rand
 - `Thank you for choosing Thundermail.`
 - `We are grateful that you use Thundermail.`
 
+## `:warmclose`: random Thundermail closing
+
+Type `:warmclose`. The trigger expands to one of these closings, chosen at random:
+
+- `Thanks again for your support of Thundermail.`
+- `Thanks once more for supporting Thundermail.`
+- `As always we're grateful for your support of Thundermail.`
+- `We're always grateful for those who support Thundermail.`
+
 ## HTML links in Zendesk
 
 In Zendesk, `:ghl`, `:zdl`, and `:bugl` expand to HTML links instead of Markdown. Espanso finds Zendesk by the window title and the program, so the browser tab title must contain "Zendesk", and the browser must be Firefox, Chrome, Edge, or Safari. Other apps, for example VS Code, always get Markdown, also if their window title contains "Zendesk". To add another HTML app, add a configuration file like `config/zendesk.yml` with a different `filter_title`.
@@ -195,7 +204,7 @@ for f in scripts/run_uv_script.sh scripts/gh_issue_link.py scripts/zd_ticket_lin
   match/gh_issue_link.yml match/gh_issue_html.yml \
   match/zd_ticket_link.yml match/zd_ticket_html.yml \
   match/bugzilla_link.yml match/bugzilla_html.yml match/_zendesk_html.yml \
-  match/hamburger.yml match/warmgreet.yml \
+  match/hamburger.yml match/warmgreet.yml match/warmclose.yml \
   config/zendesk.yml; do
   ln -s "$PWD/$f" "$CONFIG/$f"
 done
