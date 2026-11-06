@@ -1,6 +1,7 @@
 // Copy a link to the current web page, with the page title as link text.
 //
 // Usage: osascript -l JavaScript page_link.js markdown|html [browser]
+//        osascript -l JavaScript page_link.js format <title> <url>
 //
 // Gets the title and URL of the front tab of the front app, or of the
 // browser that you give, for example "Safari", "Google Chrome", or
@@ -14,6 +15,14 @@
 // Command-V pastes a rich text link. The script prints the Markdown link. On
 // error, the script prints "Error: <message>" and does not change the
 // clipboard.
+//
+// For a Mozilla Support (SUMO) knowledge base article, the link text starts
+// with "SUMO KB Article: ", " Help" goes away from the end of the title,
+// "Thunderbird" in the product name after the last " | " becomes "TB", and
+// the URL loses its locale, so that SUMO shows the reader's language.
+//
+// The format mode prints the Markdown link and the HTML link for a title and
+// a URL and does not change the clipboard. The tests use it.
 //
 // build_shortcuts.py puts this file in a "Run JavaScript for Mac Automation"
 // action. It adds `var PAGE_LINK_MODE = "markdown";` or "html"
@@ -183,15 +192,34 @@ function escapeHtml(text) {
     .replace(/"/g, "&quot;");
 }
 
-function makeLinks(browser) {
-  const tab = pageTab(browser);
+// Matches a SUMO knowledge base URL. Group 1 is the locale path segment,
+// for example "/en-US", and is empty if the URL has no locale.
+const SUMO_KB_RE = /^(https?:\/\/support\.mozilla\.org)(\/[a-z]{2,3}(?:-[a-z0-9]+)*)?(\/kb(?:[\/?#]|$))/i;
+
+// Changes the title and the URL of a SUMO knowledge base article. Other
+// pages do not change.
+function sumoKbTab(tab) {
+  const match = SUMO_KB_RE.exec(tab.url);
+  if (!match) {
+    return tab;
+  }
+  const url = match[1] + tab.url.slice(match[1].length + (match[2] || "").length);
+  let title = tab.title.replace(/ Help$/, "");
+  const bar = title.lastIndexOf(" | ");
+  if (bar >= 0) {
+    title = title.slice(0, bar + 3) + title.slice(bar + 3).replace(/\bThunderbird\b/, "TB");
+  }
+  return { title: `SUMO KB Article: ${title}`, url };
+}
+
+function makeLinks(tab) {
   if (!/^[a-z][a-z0-9+.-]*:/i.test(tab.url)) {
     throw new Error(`the page has no URL: "${tab.url}"`);
   }
-  const title = tab.title.trim() || tab.url;
+  const page = sumoKbTab({ title: tab.title.trim() || tab.url, url: tab.url });
   return {
-    markdown: `[${escapeMarkdownLinkText(title)}](${escapeMarkdownUrl(tab.url)})`,
-    html: `<a href="${escapeHtml(tab.url)}">${escapeHtml(title)}</a>`,
+    markdown: `[${escapeMarkdownLinkText(page.title)}](${escapeMarkdownUrl(page.url)})`,
+    html: `<a href="${escapeHtml(page.url)}">${escapeHtml(page.title)}</a>`,
   };
 }
 
@@ -208,7 +236,11 @@ function run(argv) {
   const mode = typeof PAGE_LINK_MODE === "undefined" ? argv[0] : PAGE_LINK_MODE;
   const browser = typeof PAGE_LINK_MODE === "undefined" ? argv[1] || "" : "";
   try {
-    const links = makeLinks(browser);
+    if (mode === "format") {
+      const links = makeLinks({ title: argv[1] || "", url: argv[2] || "" });
+      return `${links.markdown}\n${links.html}`;
+    }
+    const links = makeLinks(pageTab(browser));
     copyLinks(links, mode);
     return links.markdown;
   } catch (e) {
