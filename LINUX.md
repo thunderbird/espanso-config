@@ -1,6 +1,6 @@
 # Linux setup
 
-This page tells you how to install the Zendesk link hotkeys on Linux. The espanso macros are not set up for Linux yet. Issue #49 tracks the Linux work.
+This page tells you how to install the link hotkeys on Linux. The espanso macros are not set up for Linux yet. Issue #49 tracks the Linux work.
 
 The hotkeys use [AutoKey for Wayland](https://daveking.com/autokey-wayland-ppa/), a fork of AutoKey. Upstream AutoKey works only on X11. We tested on Ubuntu 26.04 with GNOME 50 on Wayland.
 
@@ -12,6 +12,19 @@ The hotkeys use [AutoKey for Wayland](https://daveking.com/autokey-wayland-ppa/)
 | Shift+Ctrl+Super+Z | Copies the link as rich text, with the Markdown link as plain text. Then press Ctrl+V. Use this in Gmail. |
 
 The hotkeys use the first number in the selection and ignore the text before it. Text after the number goes in the link text, so a selected `12345 blah blah` or a ticket URL followed by `blah blah` gives the link text `Zendesk ticket #12345: blah blah`. If nothing is selected, the hotkeys use the text on the clipboard and only copy the link. If the text has no number, a notification shows the error and nothing changes.
+
+## Page link hotkeys
+
+| Hotkey | Result |
+| --- | --- |
+| Ctrl+Super+L | Copies a Markdown link to the web page in the active Firefox or Chrome window, for example `[Santiago! (film) - Wikipedia](https://en.wikipedia.org/wiki/Santiago!_%28film%29)`. Then press Ctrl+V. |
+| Shift+Ctrl+Super+L | Copies the link as rich text, with the Markdown link as plain text. Then press Ctrl+V. Use this in Gmail. |
+
+The page title is the link text. The hotkeys do not press keys and do not use the selection. AutoKey gives only the window title, so the hotkeys find the URL of the most recent visit with this title in the browser history. If two pages have the same title, you can get the URL of the other page. A private window has no history, so it gives an error.
+
+The hotkeys look in the open Firefox profiles in `~/snap/firefox/common/.mozilla/firefox` (the snap), `~/.config/mozilla/firefox`, and `~/.mozilla/firefox`, and in all Chrome and Chromium profiles in `~/.config/google-chrome`, `~/.config/chromium`, and `~/snap/chromium/common/chromium`. Chrome writes its history late, so a page that you opened a few seconds ago can be missing.
+
+For a Mozilla Support knowledge base article, the link text starts with `SUMO KB Article: `, ` Help` goes away from the end, `Thunderbird` in the product name becomes `TB`, and the URL loses the locale.
 
 ## Install
 
@@ -97,4 +110,4 @@ If AutoKey cannot press keys, make sure that `id -nG` includes `input`. A new gr
 uv run --with pytest --with pyperclip pytest tests
 ```
 
-`tests/test_zendesk_link_linux.py` tests the link text. The hotkeys need a person to test them, because a terminal cannot select text in another app.
+`tests/test_zendesk_link_linux.py` and `tests/test_page_link_linux.py` test the link text and the history lookup. The hotkeys need a person to test them, because a terminal cannot select text in another app or focus a browser window.

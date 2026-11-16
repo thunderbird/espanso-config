@@ -1,6 +1,6 @@
 """Hotkey logic that turns the selection into a link, as the macOS Quick
 Actions and windows/autohotkey/links.ahk do. The AutoKey scripts in
-Links/ call link_hotkey.
+Links/ call link_hotkey, and the page link scripts call page_hotkey.
 
 Copies the selection with Ctrl+C and makes the links with make_links.
 If nothing is selected, uses the text that was on the clipboard, because
@@ -17,6 +17,7 @@ clipboard.
 import subprocess
 import time
 
+import page_link
 from copy_html import copy_html
 
 COPY_TIMEOUT = 0.5
@@ -79,6 +80,26 @@ def link_hotkey(make_links, mode, keyboard):
             restore(old_text)
     except (ValueError, RuntimeError, OSError, subprocess.CalledProcessError) as e:
         restore(old_text)
+        notify(f"Error: {e}")
+
+
+def page_hotkey(mode, window):
+    """Copy a link to the page in the active browser window.
+
+    Does not press keys or read the selection. markdown mode copies the
+    Markdown link, and html mode copies the HTML link with the Markdown
+    link as plain text. On error, shows a notification and does not change
+    the clipboard.
+    """
+    try:
+        title, url = page_link.page_from_window(window.get_active_class(), window.get_active_title())
+        links = page_link.page_links(title, url)
+        if mode == "html":
+            copy_html(links["html"], links["markdown"])
+        else:
+            write_clipboard(links["markdown"])
+        notify(f"Copied {links['markdown']}\nPress Ctrl+V.")
+    except (ValueError, RuntimeError, OSError, subprocess.CalledProcessError) as e:
         notify(f"Error: {e}")
 
 
