@@ -13,6 +13,15 @@ The hotkeys use [AutoKey for Wayland](https://daveking.com/autokey-wayland-ppa/)
 
 The hotkeys use the first number in the selection and ignore the text before it. Text after the number goes in the link text, so a selected `12345 blah blah` or a ticket URL followed by `blah blah` gives the link text `Zendesk ticket #12345: blah blah`. If nothing is selected, the hotkeys use the text on the clipboard and only copy the link. If the text has no number, a notification shows the error and nothing changes.
 
+## GitHub hotkeys
+
+| Hotkey | Result |
+| --- | --- |
+| Ctrl+Super+G | Replaces a selected GitHub issue URL with the Markdown link, for example `[espanso-config #1: Add macro that turns a GitHub issue URL in the clipboard into a Markdown link](https://github.com/thunderbird/espanso-config/issues/1)` |
+| Shift+Ctrl+Super+G | Copies the link as rich text, with the Markdown link as plain text. Then press Ctrl+V. Use this in Gmail. |
+
+The hotkeys get the issue title from the GitHub API. If the [GitHub CLI](https://cli.github.com/) (`gh`) is installed and you are logged in, they send its token, so private repositories also work. They also use the `GITHUB_TOKEN` or `GH_TOKEN` environment variable. Without a token, only public repositories work, and GitHub allows 60 requests an hour. If nothing is selected, the hotkeys use the text on the clipboard and only copy the link. If the text is not an issue URL, or the API call fails, a notification shows the error and nothing changes.
+
 ## Page link hotkeys
 
 | Hotkey | Result |
@@ -110,4 +119,4 @@ If AutoKey cannot press keys, make sure that `id -nG` includes `input`. A new gr
 uv run --with pytest --with pyperclip pytest tests
 ```
 
-`tests/test_zendesk_link_linux.py` and `tests/test_page_link_linux.py` test the link text and the history lookup. The hotkeys need a person to test them, because a terminal cannot select text in another app or focus a browser window.
+`tests/test_zendesk_link_linux.py`, `tests/test_github_link_linux.py`, and `tests/test_page_link_linux.py` test the link text and the history lookup. The hotkeys need a person to test them, because a terminal cannot select text in another app or focus a browser window.
