@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Project decisions for Claude Code sessions on macOS and Windows. README.md and WINDOWS.md describe use and install.
+Project decisions for Claude Code sessions on macOS, Windows, and Linux. README.md, WINDOWS.md, and LINUX.md describe use and install.
 
 ## Layout
 
