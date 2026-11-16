@@ -64,6 +64,16 @@ Project decisions for Claude Code sessions on macOS and Windows. README.md and W
 - On Windows, espanso ignores keystrokes from Synergy and similar software, because they have no HID device. The Windows laptop uses Synergy, so its `default.yml` has `win32_exclude_orphan_events: false`.
 - `%CONFIG%` is the espanso config root (`%APPDATA%\espanso` on Windows), not its `config` subfolder. The scripts go in `%CONFIG%\scripts`.
 
+## Linux decisions and facts that caused bugs
+
+- Issue #49 ports the link hotkeys to Ubuntu with GNOME on Wayland. It uses AutoKey for Wayland (the dlk3 fork, from the PPA `daveking.com/autokey-wayland-ppa`), because upstream AutoKey works only on X11. AutoKey needs its GNOME extension, the `input` group, and the udev rule for `/dev/uinput`. The `input` group lets every program of the user read and press keys.
+- Zendesk came first: Ctrl+Super+Z and Shift+Ctrl+Super+Z, with the same rules as #31 and #29. `linux/autokey/zendesk_link.py` and `markup.py` have pure functions, which `tests/test_zendesk_link_linux.py` tests. `links.py` has the hotkey logic. `Links/` is the AutoKey folder. Link it as `~/.config/autokey/data/Links`. The scripts in `Links/` reload the repo modules, so a change works without an AutoKey restart. A change to a `.json` file needs a restart.
+- AutoKey reports the Super key as `<left_meta>`, so the `.json` files use `<meta>`. With `<super>`, the hotkey does nothing, and the key goes to the app.
+- AutoKey sorts the modifiers and compares the lists, so keep them sorted in the `.json` files.
+- `wl-copy` offers only one type. `copy_html.py` offers `text/html` and plain text with GTK 4, and it uses the X11 backend in a detached process, because GNOME lets an X11 program own the clipboard without a focused window. `os.fork` after the `gi` import failed, so the script starts itself again with `--serve`.
+- Through the X11 bridge of GNOME, the bare `text/plain` type gives UTF-8 that was encoded twice (`cafÃ©`). `text/plain;charset=utf-8` and `UTF8_STRING` are correct. VS Code (Electron) and Gmail in Firefox paste correctly.
+- `autokey-gtk -v` writes every keystroke to its log. Use it only for tests, and delete the log after.
+
 ## Workflow
 
 - Two Claude Code sessions can run at the same time: one on macOS, one on Windows 11 in native PowerShell. Do not use WSL, because espanso on Windows runs Windows programs.
