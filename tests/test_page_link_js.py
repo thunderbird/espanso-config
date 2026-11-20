@@ -1,4 +1,5 @@
 import shutil
+import sqlite3
 import subprocess
 from pathlib import Path
 
@@ -73,3 +74,42 @@ def test_sumo_kb_keeps_query_and_fragment():
 )
 def test_not_sumo_kb(url):
     assert markdown("Question | Thunderbird Help", url) == f"[Question | Thunderbird Help]({url})"
+
+
+LONG_TITLE = (
+    "Quixotic Quest Part 2 The PlumbShop Delta Handle Kit from Canadian Tire didn't work well "
+    "(you have to move it with force with very subtle movements) because it has a round hole "
+    "which doesn't connect snuggly with our shower's diamond shaped broach. It works but it's "
+    "a kludge. And it 100% doesn't work if you try it with the hexagonal adapter."
+)
+LONG_URL = "https://example.com/long"
+
+
+def firefox_history_title(window_title, places):
+    """Run the Firefox query for a window title on a test history."""
+    sql = subprocess.run(
+        ["osascript", "-l", "JavaScript", str(SCRIPT), "firefox-sql", window_title],
+        capture_output=True, text=True, check=True,
+    ).stdout.removesuffix("\n")
+    db = sqlite3.connect(":memory:")
+    db.execute("CREATE TABLE moz_places (url TEXT, title TEXT, last_visit_date INTEGER)")
+    db.executemany("INSERT INTO moz_places VALUES (?, ?, ?)", places)
+    return db.execute(sql).fetchone()
+
+
+@pytest.mark.parametrize("suffix", ["", " — Mozilla Firefox", " — 2026-06-29"])
+def test_firefox_long_title_matches_start(suffix):
+    window_title = LONG_TITLE[:256].rstrip() + suffix
+    places = [(LONG_URL, LONG_TITLE, 2), ("https://example.com/short", "Short", 3)]
+    assert firefox_history_title(window_title, places) == (2, LONG_URL, LONG_TITLE)
+
+
+def test_firefox_long_title_uses_most_recent_visit():
+    window_title = LONG_TITLE[:256] + " — 2026-06-29"
+    places = [(LONG_URL, LONG_TITLE, 2), ("https://example.com/new", LONG_TITLE[:256] + " v2", 5)]
+    assert firefox_history_title(window_title, places)[1] == "https://example.com/new"
+
+
+def test_firefox_short_title_needs_exact_match():
+    places = [("https://example.com/a", "Short title and more", 2), ("https://example.com/b", "Short title", 1)]
+    assert firefox_history_title("Short title — Mozilla Firefox", places)[1] == "https://example.com/b"
