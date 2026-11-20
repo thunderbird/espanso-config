@@ -2,6 +2,7 @@
 //
 // Usage: osascript -l JavaScript page_link.js markdown|html [browser]
 //        osascript -l JavaScript page_link.js format <title> <url>
+//        osascript -l JavaScript page_link.js firefox-sql <window title>
 //
 // Gets the title and URL of the front tab of the front app, or of the
 // browser that you give, for example "Safari", "Google Chrome", or
@@ -23,6 +24,11 @@
 //
 // The format mode prints the Markdown link and the HTML link for a title and
 // a URL and does not change the clipboard. The tests use it.
+//
+// Firefox cuts the page title in the window title to 256 characters (#56).
+// For a long title, the script also accepts a history title that starts with
+// the window title. The firefox-sql mode prints the SQL query for a window
+// title, so that the tests can run it on a test database.
 //
 // build_shortcuts.py puts this file in a "Run JavaScript for Mac Automation"
 // action. It adds `var PAGE_LINK_MODE = "markdown";` or "html"
@@ -48,6 +54,9 @@ const BROWSER_NAMES = {
 const FIREFOX_SUFFIX_RE =
   /\s+[—–-]\s+(?:Mozilla Firefox|Firefox(?: Developer Edition| Nightly)?)(?: Private Browsing)?$/;
 const PROFILE_SUFFIX_RE = /\s+—\s+[^—]*$/;
+// Firefox cuts the page title to 256 characters. A title without its suffix
+// can also lose a space at the cut, so the limit is a little lower.
+const FIREFOX_CUT_TITLE_LENGTH = 250;
 
 function frontBundleId() {
   return ObjC.unwrap($.NSWorkspace.sharedWorkspace.frontmostApplication.bundleIdentifier);
@@ -79,15 +88,43 @@ function sqlQuote(text) {
   return `'${text.replace(/'/g, "''")}'`;
 }
 
+// Gives the titles that the window title can be for: the window title, and
+// the window title without the browser name or the profile name.
+function firefoxTitles(windowTitle) {
+  const titles = [windowTitle];
+  [FIREFOX_SUFFIX_RE, PROFILE_SUFFIX_RE].forEach((re) => {
+    const title = windowTitle.replace(re, "");
+    if (title && !titles.includes(title)) {
+      titles.push(title);
+    }
+  });
+  return titles;
+}
+
+// Gives the query for the most recent page with one of the titles. A long
+// title can be the start of a longer history title, because Firefox cuts
+// the window title.
+function firefoxSql(titles) {
+  const conditions = [`title IN (${titles.map(sqlQuote).join(", ")})`];
+  titles.forEach((title) => {
+    const length = Array.from(title).length;
+    if (length >= FIREFOX_CUT_TITLE_LENGTH) {
+      conditions.push(`substr(title, 1, ${length}) = ${sqlQuote(title)}`);
+    }
+  });
+  return (
+    "SELECT last_visit_date, url, title FROM moz_places WHERE " +
+    conditions.join(" OR ") +
+    " ORDER BY last_visit_date DESC LIMIT 1"
+  );
+}
+
 // Finds the most recent URL with one of the titles in the history of the
 // open Firefox profiles. Firefox locks places.sqlite, so the script copies it
 // with its write-ahead log, which has the recent visits. Only an open
 // profile has a write-ahead log that is not empty.
 function firefoxHistoryUrl(titles) {
-  const sql =
-    "SELECT last_visit_date, url, title FROM moz_places WHERE title IN (" +
-    titles.map(sqlQuote).join(", ") +
-    ") ORDER BY last_visit_date DESC LIMIT 1";
+  const sql = firefoxSql(titles);
   const command = [
     'dir="$(mktemp -d)" || exit 1',
     'sep="$(printf "\\037")"',
@@ -126,14 +163,7 @@ function firefoxTab(bundleId) {
   if (!app.windows.length) {
     throw new Error("Firefox has no open window");
   }
-  const windowTitle = app.windows[0].name();
-  const titles = [windowTitle];
-  [FIREFOX_SUFFIX_RE, PROFILE_SUFFIX_RE].forEach((re) => {
-    const title = windowTitle.replace(re, "");
-    if (title && !titles.includes(title)) {
-      titles.push(title);
-    }
-  });
+  const titles = firefoxTitles(app.windows[0].name());
   const found = firefoxHistoryUrl(titles);
   if (!found) {
     throw new Error(`the Firefox history has no page with the title "${titles[titles.length - 1]}"`);
@@ -239,6 +269,9 @@ function run(argv) {
     if (mode === "format") {
       const links = makeLinks({ title: argv[1] || "", url: argv[2] || "" });
       return `${links.markdown}\n${links.html}`;
+    }
+    if (mode === "firefox-sql") {
+      return firefoxSql(firefoxTitles(argv[1] || ""));
     }
     const links = makeLinks(pageTab(browser));
     copyLinks(links, mode);
