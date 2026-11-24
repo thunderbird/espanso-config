@@ -11,7 +11,7 @@ Select a Zendesk ticket number, press a hotkey, and get a link to the ticket. Se
    winget install --id AutoHotkey.AutoHotkey -e --accept-source-agreements --accept-package-agreements
    $dir = "$HOME\Documents\zendesk-hotkeys"
    New-Item -ItemType Directory -Force $dir | Out-Null
-   foreach ($f in "links.ahk", "zendesk_link.ahk", "clipboard.ahk") {
+   foreach ($f in "links.ahk", "markup.ahk", "clipboard.ahk", "web.ahk", "zendesk_link.ahk", "github_link.ahk", "bugzilla_link.ahk", "notion_link.ahk", "page_link.ahk") {
      Invoke-WebRequest "https://raw.githubusercontent.com/thunderbird/espanso-config/main/windows/autohotkey/$f" -OutFile "$dir\$f" -UseBasicParsing
    }
    $startup = [Environment]::GetFolderPath("Startup")
@@ -40,6 +40,8 @@ Select a ticket number, for example `12345` or `12345 Can't send mail`, or a tic
 - A reply to a Google Play review is plain text. There, Zendesk shows the link as text with the URL in parentheses.
 
 The hotkeys were tested in Firefox.
+
+The same script has hotkeys for GitHub issues (Ctrl+Win+G), Bugzilla bugs (Ctrl+Win+H), Notion pages (Ctrl+Win+Y), and the current web page (Ctrl+Win+L). [WINDOWS.md](../WINDOWS.md) describes them.
 
 ## Problems
 
