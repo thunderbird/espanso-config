@@ -1,51 +1,16 @@
 import ctypes
-import os
-import shutil
-import subprocess
-import sys
-from pathlib import Path
 
 import pytest
 
-AHK_DIR = Path(__file__).resolve().parent.parent / "windows" / "autohotkey"
+from ahk_run import call_links, needs_autohotkey, run_ahk
+
 URL = "https://tbpro.zendesk.com/agent/tickets/"
 
-
-def find_autohotkey():
-    for path in [
-        Path(os.environ.get("LOCALAPPDATA", "")) / "Programs" / "AutoHotkey" / "v2" / "AutoHotkey64.exe",
-        Path(os.environ.get("ProgramFiles", "")) / "AutoHotkey" / "v2" / "AutoHotkey64.exe",
-    ]:
-        if path.is_file():
-            return str(path)
-    return shutil.which("AutoHotkey64.exe")
-
-
-AUTOHOTKEY = find_autohotkey() if sys.platform == "win32" else None
-
-pytestmark = pytest.mark.skipif(AUTOHOTKEY is None, reason="needs AutoHotkey v2 on Windows")
-
-
-def run_ahk(code, *args):
-    """Run AutoHotkey code that can use the functions in the windows/autohotkey files."""
-    script = f"#Include {AHK_DIR / 'zendesk_link.ahk'}\n#Include {AHK_DIR / 'clipboard.ahk'}\n{code}\n"
-    result = subprocess.run(
-        [AUTOHOTKEY, "/ErrorStdOut=UTF-8", "*", *args],
-        input=script.encode("utf-8"), capture_output=True, check=True,
-    )
-    assert result.stderr == b""
-    return result.stdout.decode("utf-8")
+pytestmark = needs_autohotkey
 
 
 def links(text):
-    return run_ahk(
-        'try {\n'
-        '    l := ZendeskLinks(A_Args[1])\n'
-        '    FileAppend(l.markdown "`n" l.html, "*", "UTF-8-RAW")\n'
-        '} catch Error as e\n'
-        '    FileAppend("Error: " e.Message, "*", "UTF-8-RAW")',
-        text,
-    )
+    return call_links("ZendeskLinks(A_Args[1])", text)
 
 
 def markdown(text):

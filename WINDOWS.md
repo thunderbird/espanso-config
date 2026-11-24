@@ -97,16 +97,27 @@ To see the exact output of a macro, run the script yourself. First copy a URL, t
 uv run --script scripts\gh_issue_link.py
 ```
 
-## Zendesk hotkeys
+## Link hotkeys
 
-The AutoHotkey script `windows/autohotkey/links.ahk` adds two hotkeys that work without espanso and uv. [windows/ZENDESK_HOTKEYS.md](windows/ZENDESK_HOTKEYS.md) is a one-page guide for support agents that installs them without a copy of this repository.
+The AutoHotkey script `windows/autohotkey/links.ahk` adds hotkeys that work without espanso and uv, as the macOS Quick Actions do. [windows/ZENDESK_HOTKEYS.md](windows/ZENDESK_HOTKEYS.md) is a one-page guide for support agents that installs them without a copy of this repository.
 
-| Hotkey | Result |
-| --- | --- |
-| Ctrl+Win+Z | Replaces the selection with the Markdown link, for example `[Zendesk ticket #12345: blah blah](https://tbpro.zendesk.com/agent/tickets/12345)` |
-| Shift+Ctrl+Win+Z | Copies the link as rich text. Then press Ctrl+V. Use this in Gmail and Slack. Slack shows a Markdown link as plain text. |
+| Hotkey | Selection | Markdown link |
+| --- | --- | --- |
+| Ctrl+Win+Z | A Zendesk ticket number or URL | `[Zendesk ticket #12345: blah blah](https://tbpro.zendesk.com/agent/tickets/12345)` |
+| Ctrl+Win+G | A GitHub issue URL | `[espanso-config #29: Issue title](https://github.com/thunderbird/espanso-config/issues/29)` |
+| Ctrl+Win+H | A Bugzilla bug URL, `bugzil.la/N`, `N`, or `bug N` | `[Bug 1923456: Bug summary](https://bugzilla.mozilla.org/show_bug.cgi?id=1923456)` |
+| Ctrl+Win+Y | A Notion page URL or page ID | `[Notion 89abcdef: Page title](https://www.notion.so/...)` |
+| Ctrl+Win+L | None. Use it in Firefox, Chrome, or Edge. | `[Page title](https://example.com/)` |
 
-The hotkeys use the first number in the selection and ignore the text before it. Text after the number goes in the link text, so a selected `12345 blah blah` or a ticket URL followed by `blah blah` gives the link text `Zendesk ticket #12345: blah blah`. If nothing is selected, the hotkeys use the text on the clipboard and only copy the link. If the text has no number, a tooltip shows the error and nothing changes.
+The Zendesk, GitHub, Bugzilla, and Notion hotkeys replace the selection with the Markdown link. Add Shift, for example Shift+Ctrl+Win+Z, to copy the link as rich text and not change the selection. Then press Ctrl+V. Use the Shift hotkeys in Gmail and Slack. Slack shows a Markdown link as plain text.
+
+- If nothing is selected, the hotkeys use the text on the clipboard and only copy the link.
+- If the text is not a ticket, issue, bug, or Notion page, a tooltip shows the error and nothing changes.
+- Zendesk: the hotkeys use the first number in the selection and ignore the text before it. Text after the number goes in the link text, so a selected `12345 blah blah` or a ticket URL followed by `blah blah` gives the link text `Zendesk ticket #12345: blah blah`.
+- GitHub: the title comes from the GitHub API. For private repositories and a higher rate limit, install the [GitHub CLI](https://cli.github.com/) and run `gh auth login`. The hotkeys use the `gh` token, or the `GITHUB_TOKEN` or `GH_TOKEN` environment variable.
+- Bugzilla: the summary comes from the Bugzilla API, so only public bugs work.
+- Notion: the title comes from the words in the URL, because most Notion pages are private. The link text shows the last 8 characters of the page ID.
+- Page link: Ctrl+Win+L and Shift+Ctrl+Win+L only copy the link. They take the title from the window title and the URL from the address bar with Ctrl+L and Ctrl+C, so the focus stays in the address bar. Firefox cuts a long title in the window title, so for a title with 250 or more characters, the hotkeys find the full title in the Firefox history. A Mozilla Support knowledge base article gets the link text `SUMO KB Article: ...` and a URL without the locale.
 
 ### Install the hotkeys
 
@@ -123,7 +134,7 @@ The hotkeys use the first number in the selection and ignore the text before it.
 
 The green H icon in the notification area shows that the script runs. The shortcut points to the repository, so the script stays current when you pull. After you pull, right-click the icon and click **Reload Script**.
 
-`links.ahk` needs `zendesk_link.ahk` and `clipboard.ahk` in the same folder. If you copy the script, copy all three files.
+`links.ahk` needs the other `.ahk` files in `windows/autohotkey/` in the same folder. If you copy the script, copy all of them.
 
 In VS Code, Ctrl+C without a selection copies the current line, so the hotkey uses that line. Select the text first.
 
